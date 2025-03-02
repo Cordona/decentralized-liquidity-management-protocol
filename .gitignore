@@ -8,6 +8,7 @@ out/
 /broadcast/**/dry-run/
 
 # Docs
+lib/
 docs/
 
 # Dotenv file
@@ -18,6 +19,7 @@ broadcast/
 .DS_Store
 
 ### IntelliJ IDEA ###
+.vscode/
 .idea/
 *.iws
 *.iml
