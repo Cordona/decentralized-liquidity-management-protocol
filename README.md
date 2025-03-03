@@ -37,13 +37,13 @@
     - [A. Requirements](#a-requirements)
       - [Core Dependencies](#core-dependencies)
       - [Recommended Tools](#recommended-tools)
-      - [Environment Setup Verification](#environment-setup-verification)
-    - [B. Repository Structure](#b-repository-structure)
+    - [B. Project Setup](#b-project-setup)
+    - [C. Repository Structure](#c-repository-structure)
       - [Core Protocol Components](#core-protocol-components)
       - [Foundation Components](#foundation-components)
       - [Component Relationships](#component-relationships)
       - [Interface Pattern](#interface-pattern)
-    - [C. Environment Configuration](#c-environment-configuration)
+    - [D. Environment Configuration](#d-environment-configuration)
       - [Environment Files Organization](#environment-files-organization)
       - [Local Development Configuration (test.env)](#local-development-configuration-testenv)
       - [Setting Up Your Environment](#setting-up-your-environment)
@@ -350,28 +350,52 @@ Setting up your development environment for DLMP requires a few key tools. Let's
   - Familiarity with basic shell commands
   - For Windows users: Consider using WSL (Windows Subsystem for Linux) for a more consistent experience
 
-#### Environment Setup Verification
+### B. Project Setup
+-------------------
 
-Once you've installed all the required tools, you can verify your setup is correct by running:
+Follow these steps to set up your development environment for DLMP:
 
-```bash
-TODO: Update commands here and links to the repo
-# Clone the repository
-git clone https://github.com/your-org/dlmp.git
-cd dlmp
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Cordona/decentralized-liquidity-management-protocol.git
+   cd decentralized-liquidity-management-protocol
+   ```
 
-# Check if Foundry works correctly
-forge --version
-anvil --version
-cast --version
+2. **Initialize Foundry project** (if not already initialized)
+   ```bash
+   # This creates the basic Foundry project structure
+   forge init --force
+   ```
 
-# Verify the Makefile can be executed
-make help
-```
+3. **Install project dependencies**
+   ```bash
+   # This will launch our interactive dependency management tool
+   make dependencies
+   
+   # Select option 1 to install all required dependencies
+   ```
+
+4. **Set up environment files**
+   ```bash
+   # Create the environment directory
+   mkdir -p .env
+   
+   # Create test.env with the provided template in section 5.1.D
+   nano .env/test.env
+   ```
+
+5. **Verify your setup**
+   ```bash
+   # Should display the help menu
+   make help
+   
+   # Should compile the project without errors
+   forge build
+   ```
 
 If all these commands run without errors, congratulations! 🎉 Your development environment is ready for building with DLMP.
 
-### B. Repository Structure
+### C. Repository Structure
 -------------------
 
 Let's break down how our codebase is organized. Understanding the project structure is key to efficient development and makes it easier to contribute to the protocol. 🏗️
@@ -438,7 +462,7 @@ Notice how most modules follow an interface/implementation pattern (e.g., `IProt
 
 When working with the codebase, understanding these relationships will help you navigate and modify the protocol more effectively. 🚀
 
-### C. Environment Configuration
+### D. Environment Configuration
 -------------------
 
 DLMP uses environment files to configure various aspects of development, testing, and deployment. This approach eliminates hardcoded values and makes the protocol adaptable to different networks and usage scenarios.
@@ -542,7 +566,17 @@ make help
 This will display the full toolkit available to you:
 
 ```
-  Protocol Development Toolkit  
+ Protocol Development Toolkit  
+
+📦  Dependency Management:  
+  make dependencies - Interactive dependency management system
+    ├─ Install protocol dependencies with version pinning
+    ├─ Add new dependencies to your project
+    ├─ List installed dependencies with versions
+    ├─ Update dependencies to latest compatible versions
+    ├─ Check for newer versions without upgrading
+    ├─ Selectively remove specific dependencies
+    └─ Export dependency information to documentation
 
 🚀  Deployment:  
   make deploy       - Interactive deployment workflow
@@ -571,18 +605,18 @@ This will display the full toolkit available to you:
     ├─ Retrieve stored secrets when required
     └─ Keep keystore access secure
 
-💡  Deployment Tips:  
-  1. Ensure environment files are configured:
+💡  Development Tips:  
+  1. Always run 'make dependencies' after cloning the repo
+  2. Ensure environment files are configured:
      ├─ .env/sepolia.env for testnet
      └─ .env/mainnet.env for mainnet
-  2. Verify keystore access before deployment
-  3. Always run full test suite before deploying
-  4. Double-check network selection at deploy time
+  3. Run tests before making significant changes
+  4. Check for dependency updates periodically
 
 🛡️  Security Best Practices:  
+  - Verify dependency versions match audited releases
   - Backup keystores regularly
   - Run complete security analysis before deployment
-  - Verify contract addresses after deployment
   - Monitor gas prices for optimal deployment timing
 ```
 

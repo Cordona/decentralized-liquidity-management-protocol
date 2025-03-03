@@ -2,7 +2,7 @@
 pragma solidity 0.8.28;
 
 // External Interfaces (Uniswap)
-import {IUniswapV2Router02} from "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
+import {IUniswapV2Router01} from "@uniswap/v2-periphery/interfaces/IUniswapV2Router01.sol";
 import {IUniswapV2Factory} from "@uniswap/v2-core/interfaces/IUniswapV2Factory.sol";
 
 // Protocol Interfaces
@@ -81,7 +81,7 @@ contract TestDeployment is BaseTest {
         assertEq(s_protocolActivator.s_activated(), false);
         // Uniswap V2 State
         assert(s_v2Factory.i_v2Factory() == IUniswapV2Factory(s_config.periphery.uniswapV2.factoryAddr));
-        assert(s_v2Factory.i_v2Router() == IUniswapV2Router02(s_config.periphery.uniswapV2.routerAddr));
+        assert(s_v2Factory.i_v2Router() == IUniswapV2Router01(s_config.periphery.uniswapV2.routerAddr));
         assert(s_v2Factory.i_wethAddr() == s_config.periphery.wethAddr);
         // Uniswap V3 State
         assert(
@@ -104,29 +104,29 @@ contract TestDeployment is BaseTest {
     function _assertRoleConfiguration() private {
         // Deployer should be the Protocol Manager Admin
         vm.startPrank(deployer());
-        assertEq(s_manager.hasRole(Roles.ADMIN_ROLE), Roles.ADMIN_ROLE);
+        assertEq(s_manager.hasRole(Roles.ADMIN_ROLE, deployer()), true);
         vm.stopPrank();
         // Deployer should be the token rescuer
          vm.startPrank(deployer());
-        assertEq(s_v2Factory.hasRole(Roles.TOKEN_RESCUER_ROLE), Roles.TOKEN_RESCUER_ROLE);
-        assertEq(s_v3Factory.hasRole(Roles.TOKEN_RESCUER_ROLE), Roles.TOKEN_RESCUER_ROLE);
+        assertEq(s_v2Factory.hasRole(Roles.TOKEN_RESCUER_ROLE, deployer()), true);
+        assertEq(s_v3Factory.hasRole(Roles.TOKEN_RESCUER_ROLE, deployer()), true);
         vm.stopPrank();
         // Deployer should not have have admin role for periphery contracts after deployment
         vm.startPrank(deployer());
-        assertEq(s_v2Factory.hasRole(Roles.ADMIN_ROLE), NO_ROLE);
-        assertEq(s_v3Factory.hasRole(Roles.ADMIN_ROLE), NO_ROLE);
-        assertEq(s_liquidityLocker.hasRole(Roles.ADMIN_ROLE), NO_ROLE);
-        assertEq(s_protocolActivator.hasRole(Roles.ADMIN_ROLE), NO_ROLE);
+        assertEq(s_v2Factory.hasRole(Roles.ADMIN_ROLE, deployer()), false);
+        assertEq(s_v3Factory.hasRole(Roles.ADMIN_ROLE, deployer()), false);
+        assertEq(s_liquidityLocker.hasRole(Roles.ADMIN_ROLE, deployer()), false);
+        assertEq(s_protocolActivator.hasRole(Roles.ADMIN_ROLE, deployer()), false);
         vm.stopPrank();
         // Protocol Manager should be the Protocol Activator Admin
         vm.startPrank(address(s_manager));
-        assertEq(s_protocolActivator.hasRole(Roles.ADMIN_ROLE), Roles.ADMIN_ROLE);
+        assertEq(s_protocolActivator.hasRole(Roles.ADMIN_ROLE, address(s_manager)), true);
         vm.stopPrank();
         // Protocol Activator should be admin for factories and locker
         vm.startPrank(address(s_protocolActivator));
-        assertEq(s_v2Factory.hasRole(Roles.ADMIN_ROLE), Roles.ADMIN_ROLE);
-        assertEq(s_v3Factory.hasRole(Roles.ADMIN_ROLE), Roles.ADMIN_ROLE);
-        assertEq(s_liquidityLocker.hasRole(Roles.ADMIN_ROLE), Roles.ADMIN_ROLE);
+        assertEq(s_v2Factory.hasRole(Roles.ADMIN_ROLE, address(s_protocolActivator)), true);
+        assertEq(s_v3Factory.hasRole(Roles.ADMIN_ROLE, address(s_protocolActivator)), true);
+        assertEq(s_liquidityLocker.hasRole(Roles.ADMIN_ROLE, address(s_protocolActivator)), true);
         vm.stopPrank();
     }
 }

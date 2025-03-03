@@ -124,13 +124,13 @@ contract TestCreateV2Pool is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(someAddress());
-        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE), Roles.TOKEN_RESCUER_ROLE);
-        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE), Roles.TOKEN_RESCUER_ROLE);
+        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE, someAddress()),true);
+        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE, someAddress()), true);
         vm.stopPrank();
 
         vm.startPrank(deployer());
-        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE), NO_ROLE);
-        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE), NO_ROLE);
+        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE, deployer()), false);
+        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE, deployer()), false);
         vm.stopPrank();
     }
 

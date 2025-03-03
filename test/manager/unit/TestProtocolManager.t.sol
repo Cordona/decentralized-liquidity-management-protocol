@@ -66,11 +66,11 @@ contract TestProtocolManager is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(newAdmin);
-        assertEq(s_manager.hasRole(Roles.ADMIN_ROLE), Roles.ADMIN_ROLE);
+        assertEq(s_manager.hasRole(Roles.ADMIN_ROLE, newAdmin), true);
         vm.stopPrank();
 
         vm.startPrank(deployer());
-        assertEq(s_manager.hasRole(Roles.ADMIN_ROLE), NO_ROLE);
+        assertEq(s_manager.hasRole(Roles.ADMIN_ROLE, deployer()), false);
         vm.stopPrank();
     }
 

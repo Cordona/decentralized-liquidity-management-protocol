@@ -12,11 +12,21 @@ RED    := \033[31m
 BLUE   := \033[34m
 NC     := \033[0m  # No Color / Reset
 
-.PHONY: help test coverage analyze format secrets deploy
+.PHONY: help dependencies test coverage analyze format secrets deploy
 
 help:
 	@echo ""
 	@echo "$(GREEN) Protocol Development Toolkit$(NC)"
+	@echo ""
+	@echo "$(YELLOW)📦  Dependency Management:$(NC)"
+	@echo "  make dependencies - Interactive dependency management system"
+	@echo "    ├─ Install protocol dependencies with version pinning"
+	@echo "    ├─ Add new dependencies to your project"
+	@echo "    ├─ List installed dependencies with versions"
+	@echo "    ├─ Update dependencies to latest compatible versions"
+	@echo "    ├─ Check for newer versions without upgrading"
+	@echo "    ├─ Selectively remove specific dependencies"
+	@echo "    └─ Export dependency information to documentation"
 	@echo ""
 	@echo "$(YELLOW)🚀  Deployment:$(NC)"
 	@echo "  make deploy       - Interactive deployment workflow"
@@ -45,20 +55,23 @@ help:
 	@echo "    ├─ Retrieve stored secrets when required"
 	@echo "    └─ Keep keystore access secure"
 	@echo ""
-	@echo "$(GREEN)💡  Deployment Tips:$(NC)"
-	@echo "  1. Ensure environment files are configured:"
+	@echo "$(GREEN)💡  Development Tips:$(NC)"
+	@echo "  1. Always run 'make dependencies' after cloning the repo"
+	@echo "  2. Ensure environment files are configured:"
 	@echo "     ├─ .env/sepolia.env for testnet"
 	@echo "     └─ .env/mainnet.env for mainnet"
-	@echo "  2. Verify keystore access before deployment"
-	@echo "  3. Always run full test suite before deploying"
-	@echo "  4. Double-check network selection at deploy time"
+	@echo "  3. Run tests before making significant changes"
+	@echo "  4. Check for dependency updates periodically"
 	@echo ""
 	@echo "$(GREEN)🛡️  Security Best Practices:$(NC)"
+	@echo "  - Verify dependency versions match audited releases"
 	@echo "  - Backup keystores regularly"
 	@echo "  - Run complete security analysis before deployment"
-	@echo "  - Verify contract addresses after deployment"
 	@echo "  - Monitor gas prices for optimal deployment timing"
 	@echo ""
+
+dependencies:
+	./management/scripts/dependency_management.sh
 
 test:
 	./management/scripts/test.sh

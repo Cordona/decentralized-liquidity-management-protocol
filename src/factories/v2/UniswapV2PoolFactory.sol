@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 // External Dependencies
 import {IUniswapV2Factory} from "@uniswap/v2-core/interfaces/IUniswapV2Factory.sol";
-import {IUniswapV2Router02} from "@uniswap/v2-periphery/interfaces/IUniswapV2Router02.sol";
+import {IUniswapV2Router01} from "@uniswap/v2-periphery/interfaces/IUniswapV2Router01.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -54,7 +54,7 @@ contract UniswapV2PoolFactory is IUniswapV2PoolFactory, ModuleInitializer, Token
 
     // [IMMUTABLE] |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     IUniswapV2Factory public immutable i_v2Factory;
-    IUniswapV2Router02 public immutable i_v2Router;
+    IUniswapV2Router01 public immutable i_v2Router;
     address public immutable i_wethAddr;
 
     // [EVENTS] |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -68,7 +68,7 @@ contract UniswapV2PoolFactory is IUniswapV2PoolFactory, ModuleInitializer, Token
         validAddress(v2router)
         validAddress(weth)
     {
-        i_v2Router = IUniswapV2Router02(v2router);
+        i_v2Router = IUniswapV2Router01(v2router);
         i_v2Factory = IUniswapV2Factory(v2Factory);
         i_wethAddr = weth;
     }
