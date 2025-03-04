@@ -8,16 +8,19 @@ out/
 /broadcast/**/dry-run/
 
 # Docs
+lib/
 docs/
 
 # Dotenv file
 .env
+.out_of_scope
 .secrets
 broadcast/ 
 .notes.md
 .DS_Store
 
 ### IntelliJ IDEA ###
+.vscode/
 .idea/
 *.iws
 *.iml
