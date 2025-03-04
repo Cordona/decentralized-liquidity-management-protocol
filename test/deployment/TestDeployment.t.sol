@@ -107,7 +107,7 @@ contract TestDeployment is BaseTest {
         assertEq(s_manager.hasRole(Roles.ADMIN_ROLE, deployer()), true);
         vm.stopPrank();
         // Deployer should be the token rescuer
-         vm.startPrank(deployer());
+        vm.startPrank(deployer());
         assertEq(s_v2Factory.hasRole(Roles.TOKEN_RESCUER_ROLE, deployer()), true);
         assertEq(s_v3Factory.hasRole(Roles.TOKEN_RESCUER_ROLE, deployer()), true);
         vm.stopPrank();

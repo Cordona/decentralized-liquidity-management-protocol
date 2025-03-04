@@ -27,7 +27,7 @@ interface IUniswapV3PoolFactory is IPoolFactory {
     ///      Access Control:
     ///      - Restricted to ProtocolActivator only
     ///      - Requires ADMIN_ROLE
-    ///      
+    ///
     ///      Deployment Process:
     ///      1. Pool creation or initialization with sqrtPrice
     ///      2. Token approvals for position manager
@@ -60,7 +60,7 @@ interface IUniswapV3PoolFactory is IPoolFactory {
     ///      - Restricted to ProtocolActivator only
     ///      - Requires ADMIN_ROLE
     ///      - Payable function that accepts ETH
-    ///      
+    ///
     ///      Deployment Process:
     ///      1. Pool creation or initialization with sqrtPrice
     ///      2. Automatic ETH to WETH conversion

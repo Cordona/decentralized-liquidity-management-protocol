@@ -25,7 +25,7 @@ interface IProtocolActivator {
     ///      Access Control:
     ///      - Restricted to ProtocolManager only
     ///      - Requires ADMIN_ROLE
-    ///      
+    ///
     ///      Deployment Sequence:
     ///      1. Validation (config, scope, ETH)
     ///      2. V2 Deployment (if enabled)

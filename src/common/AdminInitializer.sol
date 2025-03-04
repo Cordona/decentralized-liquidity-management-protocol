@@ -38,7 +38,7 @@ abstract contract AdminInitializer is BaseProtocol {
     ///      2. Revokes role from current admin
     ///      3. Emits transfer event for auditability
     /// @param newAdmin Target address for admin privileges
-    function changeAdmin(address newAdmin) external onlyRole(Roles.ADMIN_ROLE) validAddress(newAdmin) {
+function changeAdmin(address newAdmin) external onlyRole(Roles.ADMIN_ROLE) validAddress(newAdmin) {
         grantRole(Roles.ADMIN_ROLE, newAdmin);
         revokeRole(Roles.ADMIN_ROLE, msg.sender);
         emit NewAdmin(newAdmin);

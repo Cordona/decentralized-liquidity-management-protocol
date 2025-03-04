@@ -77,9 +77,72 @@
       - [Final Deployment Steps](#final-deployment-steps)
   - [6.3 Post-Deployment Operations](#63-post-deployment-operations)
     - [A. Deployment Verification](#a-deployment-verification)
-    - [B. Protocol Activation](#b-protocol-activation)
-    - [C. Security Best Practices](#c-security-best-practices)
-
+    - [B. Security Best Practices](#b-security-best-practices)
+- [7. Protocol Activation Guide](#7-protocol-activation-guide)
+  - [7.1 Understanding Protocol Activation](#71-understanding-protocol-activation)
+    - [7.1.1 The Two-Phase Deployment Model](#711-the-two-phase-deployment-model)
+    - [7.1.2 What Happens During Activation](#712-what-happens-during-activation)
+  - [7.2 Pre-Activation Requirements](#72-pre-activation-requirements)
+    - [7.2.1 Contract Prerequisites](#721-contract-prerequisites)
+    - [7.2.2 Token \& Resource Requirements](#722-token--resource-requirements)
+  - [7.3 Running the Activation Workflow](#73-running-the-activation-workflow)
+    - [7.3.1 Activation Script Overview](#731-activation-script-overview)
+    - [7.3.2 Contract Discovery Options](#732-contract-discovery-options)
+    - [7.3.3 Parameter Collection Process](#733-parameter-collection-process)
+    - [7.3.4 Pre-Activation Validation](#734-pre-activation-validation)
+  - [7.4 Configuration Reference](#74-configuration-reference)
+    - [7.4.1 Network Settings](#741-network-settings)
+    - [7.4.2 Liquidity Parameters](#742-liquidity-parameters)
+    - [7.4.3 Technical Parameters](#743-technical-parameters)
+    - [7.4.4 Activation Scope Options](#744-activation-scope-options)
+  - [7.5 Security Considerations](#75-security-considerations)
+    - [7.5.1 One-Time Operation Warning](#751-one-time-operation-warning)
+    - [7.5.2 External Service Fees](#752-external-service-fees)
+    - [7.5.3 Keystore Management](#753-keystore-management)
+  - [7.6 Post-Activation Verification](#76-post-activation-verification)
+    - [7.6.1 Transaction Verification](#761-transaction-verification)
+    - [7.6.2 Protocol State Verification](#762-protocol-state-verification)
+    - [7.6.3 Using Protocol Manager View Functions](#763-using-protocol-manager-view-functions)
+      - [1. Check V2 Liquidity Details](#1-check-v2-liquidity-details)
+      - [2. Check V3 Liquidity Details](#2-check-v3-liquidity-details)
+      - [3. Check Liquidity Lock Details (if enabled)](#3-check-liquidity-lock-details-if-enabled)
+    - [7.6.4 Next Steps After Successful Verification](#764-next-steps-after-successful-verification)
+- [8. Protocol Manager: The DLMP Gateway](#8-protocol-manager-the-dlmp-gateway)
+  - [8.1 What is the Protocol Manager?](#81-what-is-the-protocol-manager)
+  - [8.2 Core Capabilities](#82-core-capabilities)
+    - [8.2.1 Protocol Activation](#821-protocol-activation)
+      - [Why This Matters](#why-this-matters)
+      - [Technical Implications](#technical-implications)
+    - [8.2.2 Liquidity Monitoring](#822-liquidity-monitoring)
+    - [8.2.3 Token Supply Management](#823-token-supply-management)
+- [9. Emergency Token Recovery System](#9-emergency-token-recovery-system)
+  - [9.1 Why Token Rescue Exists](#91-why-token-rescue-exists)
+  - [9.2 Architecture \& Design Principles](#92-architecture--design-principles)
+  - [9.3 Role-Based Security Model](#93-role-based-security-model)
+  - [9.4 How Token Rescue Works](#94-how-token-rescue-works)
+  - [9.5 Audit Trail \& Transparency](#95-audit-trail--transparency)
+  - [9.6 When to Use Token Rescue](#96-when-to-use-token-rescue)
+  - [9.9 Security Considerations](#99-security-considerations)
+- [10. Role Management](#10-role-management)
+  - [10.1 Transferring Administrative Control](#101-transferring-administrative-control)
+    - [10.1.1 Changing the Protocol Manager Administrator](#1011-changing-the-protocol-manager-administrator)
+    - [10.1.2 Changing the Emergency Recovery Role](#1012-changing-the-emergency-recovery-role)
+  - [10.2 Role Management Best Practices](#102-role-management-best-practices)
+    - [10.2.1 Protocol Administration](#1021-protocol-administration)
+    - [10.2.2 Emergency Recovery](#1022-emergency-recovery)
+  - [10.3 Understanding the Complete Role Hierarchy](#103-understanding-the-complete-role-hierarchy)
+- [11. Audit Information: Deployment and Activation Status](#11-audit-information-deployment-and-activation-status)
+  - [11.1 Overview for Auditors](#111-overview-for-auditors)
+  - [2. Deployment Addresses](#2-deployment-addresses)
+    - [2.1 Core Protocol Components](#21-core-protocol-components)
+    - [2.2 Protocol Deployment Transaction Hashes](#22-protocol-deployment-transaction-hashes)
+    - [2.3 Test Pair Token](#23-test-pair-token)
+    - [2.4 Test Pair Token Deployment Transaction Hash](#24-test-pair-token-deployment-transaction-hash)
+    - [2.4 LP tokens](#24-lp-tokens)
+  - [3. Protocol Activation Details](#3-protocol-activation-details)
+    - [3.1 Activation Transaction Hashes](#31-activation-transaction-hashes)
+    - [3.2 Activation Scope](#32-activation-scope)
+  - [4. Contact Information for Audit Queries](#4-contact-information-for-audit-queries)
 
 ## 1. Introduction
 
@@ -137,16 +200,15 @@ This system handles the complete lifecycle of liquidity operations, from initial
 DLMP follows a layered architecture with clear separation of concerns:
 
 ```
-🔹 Protocol Manager (Gateway)
+🔑 Protocol Manager (Gateway)
    │  Entry point for protocol operations
    ▼
-🔸 Protocol Activator (Orchestrator)
+⚙️ Protocol Activator (Orchestrator)
    │  Coordination layer for complex processes
    ▼
-🟢 Component Layer (Executors)
+🧩 Component Layer (Executors)
    │  Implementation units that perform actions
-```
-
+ ```  
 Each layer serves a distinct purpose:
 
 - **Protocol Manager**: Entry point for all protocol operations, controlling access and orchestrating high-level workflows
@@ -178,7 +240,7 @@ Each layer serves a distinct purpose:
 
 ### Emergency Token Recovery System
 
-- **Isolated Recovery Role** - The TOKEN_RESCUER_ROLE is separate from operational administrative roles, enforcing separation of concerns
+- **Isolated Recovery Role** - The `TOKEN_RESCUER_ROLE` is separate from operational administrative roles, enforcing separation of concerns
 - **Stuck Token Protection** - Enables rescue of any ERC20-compatible tokens that might become trapped in protocol contracts
 - **Transparent Recovery Process** - All recovery operations emit detailed events for full auditability
 - **Secure Role Transition** - Includes capability to securely transfer rescue privileges to a new address if needed
@@ -215,7 +277,7 @@ The deployer initializes the protocol and sets up the security architecture:
 * Initiates deployment of all protocol contracts
 * Initially holds all administrative privileges 
 * Strategically delegates permissions during initialization
-* **Retains emergency recovery capabilities** via TOKEN_RESCUER_ROLE
+* **Retains emergency recovery capabilities** via `TOKEN_RESCUER_ROLE`
 * After deployment, becomes the **external admin** with limited, focused access
 
 #### 2. Protocol Manager
@@ -224,7 +286,7 @@ Acts as the primary gateway and command center for the entire protocol:
 * Receives administrative control from the deployer
 * Controls protocol activation through the ProtocolActivator
 * Manages token supply remainder functionality
-* Provides view functions for liquidity tracking across V2/V3
+* Provides view functions for liquidity tracking across V2/V3 including V2 liquidity locking
 
 #### 3. Protocol Activator
 Serves as the orchestration layer between administration and execution:
@@ -263,31 +325,31 @@ Having the Protocol Manager as the gateway and the Activator as the orchestratio
 An attacker would need to compromise multiple components to gain significant control over the protocol. The layered security approach ensures that a breach at one level doesn't compromise the entire system.
 
 #### 5. Recovery Mechanisms
-The TOKEN_RESCUER_ROLE provides a safety net without compromising the main permission structure, allowing for emergency intervention if tokens need to be rescued from component contracts.
+The `TOKEN_RESCUER_ROLE` provides a safety net without compromising the main permission structure, allowing for emergency intervention if tokens need to be rescued from component contracts.
 
 ### Permission Models & State
 
 After deployment, the protocol establishes the following permission state:
 
 1. **Deployer**:
-   - Retains TOKEN_RESCUER_ROLE for emergency recovery
-   - Has ADMIN_ROLE only for the Protocol Manager
+   - Retains `TOKEN_RESCUER_ROLE` for emergency recovery
+   - Has `ADMIN_ROLE` only for the Protocol Manager
    - Cannot directly access factories or locker components
 
 2. **Protocol Manager**:
    - Becomes the only entry point for protocol activation
-   - Has exclusive ADMIN_ROLE for the Protocol Activator
+   - Has exclusive `ADMIN_ROLE` for the Protocol Activator
    - Cannot directly operate factories or locker
 
 3. **Protocol Activator**:
-   - Has ADMIN_ROLE for V2Factory, V3Factory, and LiquidityLocker
+   - Has `ADMIN_ROLE` for V2Factory, V3Factory, and LiquidityLocker
    - Only responds to Protocol Manager commands
    - Orchestrates complex operations across multiple components
 
 4. **Factory & Locker Components**:
    - Only respond to Protocol Activator commands
    - Cannot interact with other components independently
-   - Provide emergency token recovery via TOKEN_RESCUER_ROLE
+   - Provide emergency token recovery via `TOKEN_RESCUER_ROLE`
 
 ### Security Benefits & Considerations
 
@@ -414,7 +476,7 @@ src/                            # Core protocol source code
 
 #### Core Protocol Components
 
-- **`manager/`** - This is your entry point to the protocol! Contains `ProtocolManager.sol` which serves as the gateway for all external operations. If you're integrating with the protocol, start here. 🚪
+- **`manager/`** - This is our entry point to the protocol! Contains `ProtocolManager.sol` which serves as the gateway for all external operations. If you're integrating with the protocol, start here. 🚪
 
 - **`activator/`** - Contains `ProtocolActivator.sol` which orchestrates complex multi-step operations across different components. Think of this as the conductor of our protocol symphony. 🎮
 
@@ -426,18 +488,18 @@ src/                            # Core protocol source code
 
 #### Foundation Components
 
-- **`common/`** - The backbone of our protocol with shared utilities:
+- **`common/`** - The backbone of the protocol with shared utilities:
   - `AdminInitializer.sol` - Manages admin role transitions and initialization
   - `BaseProtocol.sol` - Core validation and common error definitions
   - `RoleBased.sol` - Enhanced role management extending OpenZeppelin's AccessControl
-  - `Roles.sol` - Security role definitions (ADMIN_ROLE, TOKEN_RESCUER_ROLE)
+  - `Roles.sol` - Security role definitions (`ADMIN_ROLE`, `TOKEN_RESCUER_ROLE`)
   - `Types.sol` - Shared data structures for protocol configuration
   - `Utils.sol` - Helper functions for token operations and address manipulations
   - `V3Constants.sol` - Uniswap V3-specific constants for pool creation
 
 - **`initializer/`** - Contains the module initialization system that establishes secure role transitions between components.
 
-- **`rescuer/`** - Implements our emergency recovery system for handling unexpected situations. A crucial safety net for the protocol. 🛟
+- **`rescuer/`** - Implements our emergency recovery system for handling unexpected situations. A crucial safety net for the protocol. 
 
 - **`token/`** - Contains the implementation of our ERC20 token standard and WETH interface. The foundation of our liquidity operations.
 
@@ -449,7 +511,7 @@ Our architecture follows a layered approach with clear boundaries:
 2. **Orchestration layer** (`activator/`) - Coordinates operations
 3. **Execution components** (`factories/`, `locker/`) - Perform specific tasks
 
-This separation creates a secure, maintainable codebase where components have clearly defined responsibilities and permissions. 💡
+This separation creates a secure, maintainable codebase where components have clearly defined responsibilities and permissions. 
 
 #### Interface Pattern
 
@@ -459,8 +521,6 @@ Notice how most modules follow an interface/implementation pattern (e.g., `IProt
 - Supports potential upgradability
 - Enforces separation of concerns
 - Makes the code more testable
-
-When working with the codebase, understanding these relationships will help you navigate and modify the protocol more effectively. 🚀
 
 ### D. Environment Configuration
 -------------------
@@ -486,26 +546,20 @@ For local testing, code coverage analysis, and static analysis, use the followin
 TOKEN_NAME="Test DFDX"
 TOKEN_SYMBOL="TDFDX"
 TOKEN_TOTAL_SUPPLY=888888888
-PROTOCOL_TOKEN_LIQUIDITY=22000000
-PAIR_TOKEN_LIQUIDITY=100000000
-FEE=10000
-DEADLINE=500
-WETH_LIQUIDITY=10
 ADMIN=0xFa377a04AFc78d158bCD59E9eFeDa07b3d89c7A3
 SUPPLY_REMAINDER_RECIPIENT=0x9437f4c817C89571706BFe258957bf4B0ca9d6b7
-LIQUIDITY_RECIPIENT=0x1a33f3e602D37AfFc69Da91C1bcA94941a1d498e
 UNISWAP_V2_ROUTER_ADDR=0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
 UNISWAP_V2_FACTORY_ADDR=0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
 UNISWAP_V3_POSITION_MANAGER_ADDR=0xC36442b4a4522E871399CD717aBDD847Ab11FE88
 UNISWAP_V2_LIQUIDITY_LOCKER=0x59d7D55DdC58494FbBbca29904f108ece82Ac7FB
-RPC_URL="YOUR_MAINNET_RPC_URL_HERE"
+RPC_URL=YOUR_MAINNET_RPC_URL
 WETH_ADDR=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
 LOCK_DURATION_DAYS=365
 ```
 
-> 💡 **Important Note**: You must replace `YOUR_MAINNET_RPC_URL_HERE` with your own Ethereum mainnet RPC URL (from providers like Alchemy, Infura, or your own node). Our test suite runs against a mainnet fork to ensure realistic testing conditions.
+> 💡 **Important Note**: You must replace `YOUR_MAINNET_RPC_URL` with your own Ethereum mainnet RPC URL (from providers like Alchemy, Infura, or your own node). Our test suite runs against a mainnet fork to ensure realistic testing conditions.
 
-The contract addresses provided above (UNISWAP_V2_ROUTER_ADDR, UNISWAP_V2_FACTORY_ADDR, etc.) are actual mainnet deployed contracts. **You should not change these values** for local testing since our fork-based tests expect to interact with these specific contracts.
+The contract addresses provided above (`UNISWAP_V2_ROUTER_ADDR`, `UNISWAP_V2_FACTORY_ADDR`, etc.) are actual mainnet deployed contracts. **You should not change these values** for local testing since our fork-based tests expect to interact with these specific contracts. Also. do not change `ADMIN` and `SUPPLY_REMAINDER_RECIPIENT` - these values are aligned with our test configuration. 
 
 #### Setting Up Your Environment
 
@@ -578,12 +632,6 @@ This will display the full toolkit available to you:
     ├─ Selectively remove specific dependencies
     └─ Export dependency information to documentation
 
-🚀  Deployment:  
-  make deploy       - Interactive deployment workflow
-    ├─ Supports both Sepolia and Mainnet
-    ├─ Includes contract verification
-    └─ Loads network-specific configurations
-
 🧪  Testing & Coverage:  
   make test         - Run tests with configurable logging
     ├─ Select verbosity level (silent, minimal, all logs)
@@ -605,9 +653,37 @@ This will display the full toolkit available to you:
     ├─ Retrieve stored secrets when required
     └─ Keep keystore access secure
 
+🚀  Script Deployment:  
+  make deploy-script - Guided deployment script execution
+    ├─ Prompts for deployment script path
+    ├─ Collects contract name and deployer address
+    ├─ Validates keystore and RPC configuration
+    ├─ Supports Etherscan verification
+    ├─ Ensures correct contract deployment settings
+    ├─ Provides a final confirmation step
+    └─ Executes deployment via Foundry (forge script)
+
+🚀  Protocol Deployment:  
+  make deploy-protocol - Interactive deployment workflow
+    ├─ Supports both Sepolia and Mainnet
+    ├─ Includes contract verification
+    └─ Loads network-specific configurations
+
+⚡  Protocol Activation:  
+  make activate     - Execute the activation workflow for deployed contracts
+    ├─ Discovers deployed contract addresses
+    ├─ Collects required activation parameters
+    ├─ Ensures necessary approvals and balance checks
+    ├─ Supports interactive and automated execution modes
+    ├─ Validates protocol readiness before activation
+    ├─ Runs network-specific activation on Sepolia or Mainnet
+    ├─ Provides execution logs and confirmation prompts
+    └─ Ensures activation cannot be re-executed post-success
+
 💡  Development Tips:  
   1. Always run 'make dependencies' after cloning the repo
   2. Ensure environment files are configured:
+     ├─ .env/test.env for local fork testing at mainnet
      ├─ .env/sepolia.env for testnet
      └─ .env/mainnet.env for mainnet
   3. Run tests before making significant changes
@@ -618,6 +694,7 @@ This will display the full toolkit available to you:
   - Backup keystores regularly
   - Run complete security analysis before deployment
   - Monitor gas prices for optimal deployment timing
+
 ```
 
 #### Interactive Workflow Design
@@ -662,8 +739,6 @@ The testing script also allows you to run specific test cases instead of the ent
 Would you like to run a specific test? (y/n): y
 Enter the test function name (e.g. testActivateV2V3): testActivateV2
 ```
-
-This targeted testing capability is invaluable when you're iterating on specific functionality. 🎯
 
 ### C. Code Coverage & Analysis
 -------------------
@@ -732,8 +807,6 @@ Each tool provides different insights:
   - Potential economic attack vectors
   - Integration vulnerabilities
 
-The combined analysis gives you a robust security perspective on your implementation. For production-ready code, always run both tools and address any findings. 🔐
-
 #### Code Formatting
 
 Maintaining consistent code style is important for readability and maintainability:
@@ -764,7 +837,7 @@ For optimal development efficiency, follow these proven workflow patterns:
 
 6. **Complete workflow before deployment**:
    ```
-   make test → make coverage → make analyze → make deploy
+   make test → make coverage → make analyze → make deploy-protocol
    ```
 
 By following this structured approach, you'll develop more reliable, secure protocol implementations while saving time and avoiding common pitfalls. 🚀
@@ -785,24 +858,26 @@ Each network requires specific configuration parameters. Below is the template f
 TOKEN_NAME="Test DFDX"
 TOKEN_SYMBOL="TDFDX"
 TOKEN_TOTAL_SUPPLY=888888888
-ADMIN=0xbC7c091f89cd344D0575F3aA05b103bF748fEee1
-SUPPLY_REMAINDER_RECIPIENT=0xbC7c091f89cd344D0575F3aA05b103bF748fEee1
+ADMIN=YOUR_ADMIN_ADDRESS
+SUPPLY_REMAINDER_RECIPIENT=YOUR_SUPPLY_REMAINDER_RECIPIENT
 UNISWAP_V2_ROUTER_ADDR=0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3
 UNISWAP_V2_FACTORY_ADDR=0xF62c03E08ada871A0bEb309762E260a7a6a880E6
 UNISWAP_V3_POSITION_MANAGER_ADDR=0x1238536071E1c677A632429e3655c799b22cDA52
 UNISWAP_V2_LIQUIDITY_LOCKER=0x3075530A0524c2cAeb80Ac44A2cBAd15C82eb946
-RPC_URL="YOUR_SEPOLIA_RPC_URL_HERE"
-WETH_ADDR=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+RPC_URL=YOUR_SEPOLIA_RPC_URL_HERE
+WETH_ADDR=0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14
 LOCK_DURATION_DAYS=365
-ETHERSCAN_API_KEY="YOUR_ETHERSCAN_API_KEY_HERE"
+ETHERSCAN_API_KEY=YOUR_ETHERSCAN_API_KEY
 ```
 
 > ⚠️ **Critical Requirements**:
-> 
-> 1. Replace `YOUR_SEPOLIA_RPC_URL_HERE` with your own Sepolia RPC URL
-> 2. Replace `YOUR_ETHERSCAN_API_KEY_HERE` with your own Etherscan API key (needed for contract verification)
-> 3. Ensure the `ADMIN` address has Sepolia ETH - this is essential for deployment and protocol activation
-> 4. The contract addresses for Uniswap components are verified Sepolia deployments - do not modify them
+>
+> 1. Replace `YOUR_ADMIN_ADDRESS` with admin address with sufficient Sepolia ETH
+> 2. Replace `YOUR_SUPPLY_REMAINDER_RECIPIENT` with valid address
+> 3. Replace `YOUR_SEPOLIA_RPC_URL` with your own Sepolia RPC URL
+> 4. Replace `YOUR_ETHERSCAN_API_KEY` with your own Etherscan API key (needed for contract verification)
+> 5. Ensure the `ADMIN` address has Sepolia ETH - this is essential for deployment and protocol activation
+> 6. The contract addresses for Uniswap components are verified Sepolia deployments - do not modify them
 
 For mainnet deployments, you'll need a similar configuration file at `.env/mainnet.env` with production values.
 
@@ -835,7 +910,9 @@ To prepare for deployment:
 3. **Verify keystore creation** - Select option 3 to confirm your keystore appears in the list
 4. **Check the associated address** - Select option 4 to verify the keystore has the expected public address
 
-> 💡 **Security Tip**: For mainnet deployments, consider using hardware wallets or multi-signature wallets for the `ADMIN` role. The deployment pipeline works with these solutions through appropriate keystores.
+> 💡 **Security Tip**: For mainnet deployments, consider using hardware wallets or multi-signature wallets for the `ADMIN` role.  
+> Be extremely **cautious** when using multisig wallets—hackers can **social-engineer** their way in and exploit vulnerabilities.  
+> **Research the $1.4B Bybit hack** and watch [Patrick Collins's video](https://youtu.be/Gf8_ovO-jBI?si=NZE0REQ5lVTRnYF4) explaining how this attack was executed despite the use of a multisig wallet.
 
 ## 6.2 Deployment Workflow
 
@@ -847,7 +924,7 @@ DLMP's deployment process follows a comprehensive pipeline that enforces testing
 To start the deployment process:
 
 ```bash
-make deploy
+make deploy-protocol
 ```
 
 This initiates a guided workflow that:
@@ -889,7 +966,9 @@ Functions....: 96.67% (min: 85%)
 [SUCCESS] ✅ All tests passed and coverage requirements met!
 ```
 
-If any coverage metric falls below 85%, the deployment will abort with an error message highlighting which areas need improvement.
+You can define a custom coverage threshold for deployment. However, 85% is the recommended minimum for production deployments.
+If you set a threshold below 85%, they must explicitly acknowledge the risk of deploying with insufficient test coverage.
+If the actual test coverage falls below the user-defined threshold, the deployment script will abort and display an error message identifying which areas need improvement.
 
 ### C. Security Analysis
 -------------------
@@ -1011,29 +1090,17 @@ Enter deployment keystore name:
 After successful deployment, the script will:
 
 1. **Display deployed contract addresses**
-2. **Verify contracts on Etherscan** (if ETHERSCAN_API_KEY was provided)
+2. **Verify contracts on Etherscan** (`ETHERSCAN_API_KEY` **must** be provided)
 3. **Save deployment information** for future reference
 
 Verify that all contracts have been deployed and verified correctly before proceeding to protocol activation.
 
-### B. Protocol Activation
--------------------
-
-Deploying the protocol and activating it are separate operations. This separation provides an additional safety check and allows time for verification before making the protocol operational.
-
-Protocol activation includes:
-- Creating liquidity pools
-- Setting up initial token liquidity
-- Configuring locking parameters
-
-Detailed activation instructions will be covered in the next section.
-
-### C. Security Best Practices
+### B. Security Best Practices
 -------------------
 
 When deploying to production, follow these critical security practices:
 
-1. **Use multi-signature wallets** for the ADMIN_ROLE
+1. **Use multi-signature wallets** for the `ADMIN_ROLE`
 2. **Store private keys in hardware wallets** where possible
 3. **Document every deployment** including configuration and contract addresses
 4. **Verify all contracts** on Etherscan after deployment
@@ -1043,3 +1110,886 @@ When deploying to production, follow these critical security practices:
 8. **Perform third-party audits** of the codebase before significant deployments
 
 By following this comprehensive deployment guide, you'll ensure a secure, well-validated implementation of the DLMP protocol across both test and production environments. The next section will cover protocol activation and management after deployment. 🚀
+
+# 7. Protocol Activation Guide
+
+Protocol activation is the critical process that brings your deployed DLMP infrastructure to life. This guide walks you through the entire activation journey, from understanding the underlying principles to verifying successful implementation.
+
+## 7.1 Understanding Protocol Activation
+
+### 7.1.1 The Two-Phase Deployment Model
+
+DLMP implements a deliberate separation between deployment and activation phases for enhanced security:
+
+```
+Phase 1: Contract Deployment → Verification Period → Phase 2: Protocol Activation
+```
+
+This separation provides several critical advantages:
+
+- **Security Buffer** - Creates time for contract verification and audit before funds are committed
+- **Risk Isolation** - Deployment failures don't risk liquidity assets
+- **Operational Control** - Gives teams time to prepare token balances and marketing announcements
+- **Governance Transition** - Allows transfer of control from technical deployer to operational team
+
+By splitting the process, we want reduce the attack surface during the most vulnerable period - immediately after deployment.
+
+### 7.1.2 What Happens During Activation
+
+During activation, the protocol executes several critical operations:
+
+1. **Factory Funding** - Protocol Token and Pair Token transfers to V2/V3 factories
+2. **Pool Creation** - Establishing trading pairs on Uniswap V2/V3
+3. **Liquidity Provision** - Seeding initial liquidity with calculated token amounts
+4. **Liquidity Locking** - Securing V2 liquidity via UNCX (if enabled)
+5. **State Transition** - One-way protocol state change to "Activated"
+
+These operations establish your token's initial trading environment and create the foundation for its market health.
+
+## 7.2 Pre-Activation Requirements
+
+### 7.2.1 Contract Prerequisites
+
+Before activation, ensure you have:
+
+- ✅ Successfully deployed Protocol Manager
+- ✅ Successfully deployed V2 Factory
+- ✅ Successfully deployed V3 Factory
+- ✅ Successfully deployed Protocol Token
+- ✅ Correct role permissions assigned during deployment
+
+You should have your `run-latest.json` file from deployment containing all contract addresses.
+
+### 7.2.2 Token & Resource Requirements
+
+The activating address must have:
+
+| Resource       | Purpose                   | Notes                                            |
+| -------------- | ------------------------- | ------------------------------------------------ |
+| Protocol Token | Liquidity provision       | Needs 2× (per-pool amount × pools created)       |
+| Pair Token     | Trading pair creation     | Commonly USDC, USDT, or DAI                      |
+| ETH            | Gas fees + WETH liquidity | Plan for high gas usage (~15-20M gas)            |
+| ETH            | UNCX locking fees         | 0.1 ETH per pool on mainnet, 0.01 ETH on testnet |
+| ADMIN_ROLE     | Permission to activate    | Assigned during deployment                       |
+
+> ⚠️ **Important**: The activating address MUST have the `ADMIN_ROLE` and sufficient token balances for ALL pools being created. Calculate your requirements carefully!
+
+## 7.3 Running the Activation Workflow
+
+### 7.3.1 Activation Script Overview
+
+The protocol provides a specialized script (`activate_protocol.sh`) that orchestrates the entire activation process through an interactive workflow.
+
+> ⚠️ **Critical Security Notice**: You MUST use the provided activation scripts (`activate_protocol.sh` and `ActivateProtocol.s.sol`). These scripts implement security best practices and enforce proper protocol interaction patterns that align with the architecture's design. Custom activation attempts may lead to security vulnerabilities, stuck tokens, or incomplete activation.
+
+Prerequisites for running the script:
+- Foundry toolkit installed (`forge`, `cast`)
+- Bash environment
+- `jq` for JSON parsing
+
+Run the make command:
+```bash
+make activate-protocol
+```
+
+### 7.3.2 Contract Discovery Options
+
+The script offers three methods to locate your deployed contracts:
+
+**Option 1: Using deployment JSON** (Recommended)
+```
+Select discovery method: 1
+Enter path to run-latest.json: ./broadcast/Deploy.s.sol/11155111/run-latest.json
+```
+This is the most reliable method as it directly uses your deployment artifacts.
+
+**Option 2: Manual address entry**
+```
+Select discovery method: 2
+Enter Protocol Token address: 0x...
+Enter Protocol Manager address: 0x...
+# ...and so on
+```
+Use this when deployment artifacts aren't available.
+
+**Option 3: Auto-discovery**
+```
+Select discovery method: 3
+```
+The script searches common locations for deployment artifacts.
+
+### 7.3.3 Parameter Collection Process
+
+The script guides you through five configuration areas:
+
+1. **Admin Configuration** - Who will execute activation
+   ```
+   Enter admin address (with ADMIN_ROLE): 0x...
+   ```
+
+2. **Token Configuration** - Which tokens to use for pools
+   ```
+   Enter Pair Token address (e.g. USDC): 0x...
+   Enter WETH address [press Enter for default]: 
+   Enter Liquidity Tokens Recipient address: 0x...
+   ```
+
+3. **Liquidity Configuration** - How much liquidity to provide
+   ```
+   Enter Protocol Token liquidity amount(per pool): 2000000
+   Enter Pair Token liquidity amount (per pool): 10000000
+   Enter WETH liquidity amount (in ETH, not wei, per pool): 1
+   ```
+
+4. **Technical Parameters** - Pool settings
+   ```
+   Select fee tier (1-4) [press Enter for default (3)]: 4
+   Enter deadline in seconds [press Enter for default]: 500
+   ```
+
+5. **Activation Scope** - Which features to enable
+   ```
+   Create Uniswap V2 pools? (y/n): y
+   Create Uniswap V3 pools? (y/n): y
+   Lock Uniswap V2 liquidity? (y/n): y
+   ```
+
+### 7.3.4 Pre-Activation Validation
+
+The script performs comprehensive validation before execution:
+
+```
+📋 COMPLETE ACTIVATION CONFIGURATION
+■ DISCOVERED CONTRACTS
+  • Protocol Token:       0xddea30fec...
+  • Protocol Manager:     0xc9bd53db...
+  • V2 Factory:           0xd7d8fb21...
+  • V3 Factory:           0x8dc2e327...
+
+■ USER CONFIGURATION
+  • Admin Address:        0xbC7c091f...
+  • Pair Token:           0x78c95fe6...
+  • WETH Address:         0xfFf99767...
+  • Liquidity Recipient:  0xbC7c091f...
+
+# ... and more
+```
+
+This validation ensures you have a complete understanding of what will happen during activation.
+
+## 7.4 Configuration Reference
+
+### 7.4.1 Network Settings
+
+| Setting  | Description                       | Example                                         |
+| -------- | --------------------------------- | ----------------------------------------------- |
+| RPC URL  | Network endpoint for transactions | `https://eth-sepolia.g.alchemy.com/v2/YOUR-KEY` |
+| Chain ID | Network identifier                | `1` (Mainnet), `11155111` (Sepolia)             |
+
+> 💡 **Tip**: Using a private RPC endpoint (like Alchemy or Infura) provides more reliable transaction execution than public endpoints.
+
+### 7.4.2 Liquidity Parameters
+
+| Parameter             | Description     | Recommendation                                        |
+| --------------------- | --------------- | ----------------------------------------------------- |
+| Protocol Token Amount | Amount per pool | Calculate based on desired initial price              |
+| Pair Token Amount     | Amount per pool | Balance with Protocol Token for target price          |
+| WETH Amount           | ETH per pool    | Usually 0.5-2 ETH for testnets, 2-10+ ETH for mainnet |
+
+### 7.4.3 Technical Parameters
+
+| Parameter   | Description            | Options                                                      |
+| ----------- | ---------------------- | ------------------------------------------------------------ |
+| V3 Fee Tier | Trading fee percentage | 0.01% (stable), 0.05% (stable), 0.3% (standard), 1% (exotic) |
+| Deadline    | Transaction expiration | 500-3600 seconds (longer for congested networks)             |
+
+### 7.4.4 Activation Scope Options
+
+| Option            | Description              | Considerations                             |
+| ----------------- | ------------------------ | ------------------------------------------ |
+| Create V2 Pools   | Standard liquidity pools | Good for general trading, easier for users |
+| Create V3 Pools   | Concentrated liquidity   | More capital-efficient, complex for users  |
+| Lock V2 Liquidity | UNCX liquidity locking   | Builds trust, requires fees                |
+
+## 7.5 Security Considerations
+
+### 7.5.1 One-Time Operation Warning
+
+> ⚠️ **CRITICAL**: Protocol activation is a **ONE-TIME OPERATION**. Once successfully executed, it cannot be repeated or reversed.
+
+This finality is by design and provides several benefits:
+- Prevents double-liquidity creation
+- Establishes clear market initialization point
+- Enforces proper protocol lifecycle management
+
+However, it means you must:
+- Triple-check all parameters before confirmation
+- Ensure sufficient resources for the operation
+- Have contingency plans in case of network issues
+
+### 7.5.2 External Service Fees
+
+UNCX liquidity locking requires fees paid to the UNCX service:
+
+| Network | Fee per Pool | Total for 2 Pools | Notes             |
+| ------- | ------------ | ----------------- | ----------------- |
+| Mainnet | ~0.1 ETH     | ~0.2 ETH          | Subject to change |
+| Sepolia | ~0.01 ETH    | ~0.02 ETH         | May vary          |
+
+To verify current fees:
+
+```bash
+cast call 0x3075530A0524c2cAeb80Ac44A2cBAd15C82eb946 \
+"gFees()(uint256,address,uint256,uint256,uint256,uint256,address,uint256,uint256)" \
+--rpc-url YOUR_RPC_URL
+```
+
+The first value returned is the fee in wei.
+
+### 7.5.3 Keystore Management
+
+For a successful activation you must have a private key generated with our `make-secrets` command
+
+## 7.6 Post-Activation Verification
+
+### 7.6.1 Transaction Verification
+
+First, confirm all transactions succeeded (as shown in your terminal output):
+
+```
+##### sepolia
+✅ [Success] Hash: 0x1be698e3a4c773763b1fd0beffe5acef7fc7a0f2ee3c16ce6e57b9bb0629adfe
+...
+✅ [Success] Hash: 0xaa52a61105e31450e2c12de150c3602129e69d7792b4237c2776b1ce12b48a40
+```
+
+The pattern we expect to see is:
+1. Four smaller transactions (~51K gas each) - These are token transfers to the factories
+2. One larger transaction (~16.7M gas) - This is the main activation call
+
+All transactions should show `[Success]` status. If any transaction failed, the activation would be incomplete.
+
+### 7.6.2 Protocol State Verification
+
+```bash
+# Check if protocol is activated (this can be called on the ProtocolActivator)
+cast call <PROTOCOL-ACTIVATOR-ADDRESS> "s_activated()(bool)" --rpc-url <YOUR-RPC-URL>
+# Should return: true
+```
+
+### 7.6.3 Using Protocol Manager View Functions
+
+The Protocol Manager provides specialized functions to verify all aspects of activation:
+
+#### 1. Check V2 Liquidity Details
+
+```bash
+# Format: getV2LiquidityDetails(tokenA, tokenB, liquidityOwner)
+cast call PROTOCOL_MANAGER_ADDRESS "getV2LiquidityDetails(address,address,address)(address,uint256)" \
+  PROTOCOL_TOKEN_ADDRESS PAIR_TOKEN_ADDRESS LIQUIDITY_RECIPIENT_ADDRESS
+```
+
+This returns:
+- `address liquidityToken`: The LP token address
+- `uint256 liquidity`: The amount of LP tokens received
+
+> 💡If you activated the protocol with V2 liquidity locking, you should expect a `0` value for the LP tokens
+> Use the ProtocolActivator's address for `LIQUIDITY_RECIPIENT_ADDRESS`. 
+> More details - in the contract's natspec documentation
+
+#### 2. Check V3 Liquidity Details
+
+```bash
+# Format: getV3LiquidityDetails(liquidityOwner)
+cast call PROTOCOL_MANAGER_ADDRESS "getV3LiquidityDetails(address)(uint256,uint128,uint24)" \
+  LIQUIDITY_RECIPIENT_ADDRESS
+```
+
+This returns:
+- `uint256 tokenId`: The NFT position ID
+- `uint128 liquidity`: Amount of liquidity in the position
+- `uint24 fee`: The fee tier (should match what you selected during activation)
+
+#### 3. Check Liquidity Lock Details (if enabled)
+
+```bash
+# First, get the LP token address from getV2LiquidityDetails
+# Then: getLiquidityLockDetails(owner, lpToken)
+cast call PROTOCOL_MANAGER_ADDRESS "getLiquidityLockDetails(address,address)(uint256,uint256,uint256,uint256,uint256,address)" \
+  LIQUIDITY_RECIPIENT_ADDRESS LP_TOKEN_ADDRESS
+```
+> Use the ProtocolActivator's address for `LIQUIDITY_RECIPIENT_ADDRESS`. 
+> More details - in the contract's natspec documentation
+
+This returns comprehensive lock information:
+- `uint256 lockDate`: When the lock was created (timestamp)
+- `uint256 amount`: Amount of LP tokens locked
+- `uint256 initialAmount`: Initial lock amount
+- `uint256 unlockDate`: When tokens become unlockable (timestamp)
+- `uint256 lockId`: Unique identifier in UNCX system
+- `address owner`: Who can unlock the tokens
+
+### 7.6.4 Next Steps After Successful Verification
+
+After confirming successful activation:
+
+1. **Document All Addresses** - Save all contract and pool addresses for future reference
+2. **Monitor Price Performance** - Watch initial trading activity and price discovery
+3. **Consider Additional Liquidity** - Evaluate if more liquidity is needed based on trading volume
+4. **Begin Marketing Activities** - Now that trading is live, launch planned marketing initiatives
+5. **Prepare Monitoring Tools** - Set up alerts for significant liquidity changes or trading anomalies
+
+By leveraging the Protocol Manager's built-in verification functions, you get the most accurate and direct confirmation of successful activation without relying on third-party interfaces. This approach ensures you have cryptographic proof that all protocol components are correctly configured and operational! 🛡️
+
+# 8. Protocol Manager: The DLMP Gateway
+
+Let's explore the Protocol Manager - the central control hub that makes our entire system work securely and efficiently. Think of it as the "front door" to your protocol.
+
+## 8.1 What is the Protocol Manager?
+
+The Protocol Manager serves as the single entry point for all important protocol operations. 
+
+```
+External World → Protocol Manager → Protocol Components
+```
+
+Why this matters:
+- Creates a single, secure entry point that's easier to protect
+- Establishes clear permission boundaries
+- Makes the system easier to understand and audit
+- Prevents direct tampering with internal components
+
+## 8.2 Core Capabilities
+
+### 8.2.1 Protocol Activation
+
+The Manager's primary job is to coordinate the protocol activation process:
+
+```solidity
+function activate(PoolConfig calldata config, ActivationScope calldata scope)
+    external
+    payable
+    nonReentrant
+    onlyRole(Roles.ADMIN_ROLE)
+```
+
+This function:
+- Takes your configuration parameters
+- Forwards ETH for pool creation and locking fees
+- Orchestrates the deployment of liquidity across Uniswap V2/V3
+- Ensures only authorized admins can trigger activation
+
+> ⚠️ **CRITICAL SECURITY NOTICE**: Always activate the protocol using the official activation workflow detailed in Section 7 (Protocol Activation Guide). Never attempt to call the `activate()` function directly or create custom activation scripts.
+
+#### Why This Matters
+
+The official activation workflow isn't just a convenience—it's a critical security layer that:
+
+1. **Performs essential pre-checks** - Validates token approvals, balances, and permissions
+2. **Calculates precise token amounts** - Ensures correct distribution of tokens to factory components
+3. **Manages complex transaction sequences** - Handles factory funding before activation in the correct order
+4. **Prevents partial activation** - Custom approaches risk leaving your protocol in an inconsistent state
+
+Think of our activation workflow like a flight pre-check system—it ensures everything is in perfect order before the critical "takeoff" moment of your protocol launch. 🚀
+
+#### Technical Implications
+
+Attempting to bypass the official activation process could lead to:
+- Tokens being stuck in contracts without proper pool creation
+- Liquidity positions being created without proper locking
+- Security roles not being correctly validated
+- Transaction failures at unpredictable points in the sequence
+
+The `activate_protocol.sh` script and `ActivateProtocol.s.sol` contract were carefully engineered to work in tandem with the Protocol Manager, creating a secure, predictable activation experience that protects your assets and ensures proper protocol initialization.
+
+Always refer to Section 7 for the complete, step-by-step activation guide. Your protocol's security and functionality depend on following this established path! 🔐
+
+### 8.2.2 Liquidity Monitoring
+
+After activation, the Manager becomes your window into your protocol's health:
+
+```solidity
+// Check V2 liquidity positions
+function getV2LiquidityDetails(address tokenA, address tokenB, address liquidityOwner)
+    external view returns (address liquidityToken, uint256 liquidity)
+
+// Check V3 positions
+function getV3LiquidityDetails(address liquidityOwner)
+    external view returns (uint256 tokenId, uint128 liquidity, uint24 fee)
+
+// Check liquidity locks
+function getLiquidityLockDetails(address _owner, address _lpToken)
+    external view returns (...)
+```
+
+These functions let you:
+- Monitor your liquidity positions across both Uniswap versions
+- Verify lock status and unlock timing
+- Build monitoring dashboards and alerts
+
+### 8.2.3 Token Supply Management
+
+The Manager also helps handle any remaining tokens after launch:
+
+```solidity
+function transferSupplyRemainder(address owner) 
+    external onlyRole(Roles.ADMIN_ROLE)
+```
+
+This streamlines post-launch token distribution and treasury management.
+
+# 9. Emergency Token Recovery System
+
+## 9.1 Why Token Rescue Exists
+
+Every DeFi protocol needs a safety net. Despite careful design, tokens can sometimes get stuck in contracts due to:
+
+- Unexpected edge cases in transaction sequences
+- User errors when interacting with the protocol
+- Protocol upgrade scenarios with balance transitions
+- External protocol integration changes
+
+We use a dedicated token rescue system that's:
+- **Intentionally isolated** from the main protocol flow
+- **Role-restricted** to prevent unauthorized access
+- **Transparently auditable** through event emissions
+
+## 9.2 Architecture & Design Principles
+
+```
+TokenRescuer (Abstract Contract)
+     ↓
+   extends
+     ↓
+Protocol Components (V2/V3 Factories)
+```
+
+The TokenRescuer functionality is intentionally **not** implemented in the Protocol Manager. This architectural decision creates important security boundaries:
+
+```solidity
+// TokenRescuer.sol (abstract contract)
+abstract contract TokenRescuer is BaseProtocol {
+    // Emergency rescue functionality
+    function rescueTokens(address tokenA, address tokenB, address to)
+        external
+        virtual
+        onlyRole(Roles.TOKEN_RESCUER_ROLE)
+        validAddress(tokenA)
+        validAddress(tokenB)
+        validAddress(to)
+    {
+        // Rescue implementation
+    }
+}
+```
+
+Key design decisions:
+1. **Separation of Concerns**: Rescue functionality lives in component contracts, not the gateway
+2. **Privilege Isolation**: Uses dedicated `TOKEN_RESCUER_ROLE` separate from `ADMIN_ROLE`
+3. **Implementation via Extension**: Components inherit from TokenRescuer abstract contract
+4. **Dual-Token Recovery**: Always rescues pairs of tokens to handle LP scenarios
+
+## 9.3 Role-Based Security Model
+
+The TOKEN_RESCUER_ROLE is a specialized permission that:
+
+1. Is initially granted to the deployer in the constructor:
+   ```solidity
+   constructor() {
+       _grantRole(Roles.TOKEN_RESCUER_ROLE, msg.sender);
+   }
+   ```
+
+2. Can be transferred to a new address when needed:
+   ```solidity
+   function changeRescuer(address newRescuer) 
+       external 
+       onlyRole(Roles.TOKEN_RESCUER_ROLE) 
+       validAddress(newRescuer)
+   {
+       grantRole(Roles.TOKEN_RESCUER_ROLE, newRescuer);
+       revokeRole(Roles.TOKEN_RESCUER_ROLE, msg.sender);
+       emit NewTokensRescuer(newRescuer);
+   }
+   ```
+
+This creates a clean security boundary between:
+- **Operational Administration** (`ADMIN_ROLE`) - Day-to-day protocol operations
+- **Emergency Recovery** (`TOKEN_RESCUER_ROLE`) - Last-resort intervention
+
+## 9.4 How Token Rescue Works
+
+The rescue process itself is straightforward:
+
+```solidity
+function rescueTokens(address tokenA, address tokenB, address to)
+    external
+    virtual
+    onlyRole(Roles.TOKEN_RESCUER_ROLE)
+    validAddress(tokenA)
+    validAddress(tokenB)
+    validAddress(to)
+{
+    uint256 rescuedTokenBalanceA = IERC20(tokenA).balanceOf(address(this));
+    uint256 rescuedTokenBalanceB = IERC20(tokenB).balanceOf(address(this));
+
+    emit TokensRescued(tokenA, tokenB, to, rescuedTokenBalanceA, rescuedTokenBalanceB);
+
+    IERC20(tokenA).safeTransfer(to, rescuedTokenBalanceA);
+    IERC20(tokenB).safeTransfer(to, rescuedTokenBalanceB);
+}
+```
+
+The function:
+1. Checks the current balance of both tokens in the contract
+2. Emits a detailed event recording the rescue operation
+3. Transfers the entire balance of both tokens to the recipient
+4. Uses SafeERC20 to handle non-standard tokens securely
+
+## 9.5 Audit Trail & Transparency
+
+Every rescue operation emits a detailed `TokensRescued` event:
+
+```solidity
+event TokensRescued(
+    address indexed tokenA, 
+    address indexed tokenB, 
+    address indexed to, 
+    uint256 liquidityA, 
+    uint256 liquidityB
+);
+```
+
+This provides crucial information for:
+- Forensic analysis of rescue operations
+- Reconciliation of token movements
+- Operational transparency for users and stakeholders
+
+The `NewTokensRescuer` event provides visibility into role transitions:
+
+```solidity
+event NewTokensRescuer(address indexed newTokenRescuer);
+```
+
+## 9.6 When to Use Token Rescue
+
+The rescue functionality is designed for exceptional circumstances:
+
+| Appropriate Use Cases                 | Inappropriate Use Cases |
+| ------------------------------------- | ----------------------- |
+| Tokens accidentally sent to contracts | Regular token transfers |
+| Recovery after failed operations      | Protocol rebalancing    |
+| Rescuing during contract upgrades     | Fee collection          |
+| Emergency evacuation scenarios        | Routine operations      |
+
+
+## 9.9 Security Considerations
+
+When working with token rescue functionality:
+
+1. **Immediate Role Transfer**: Consider transferring `TOKEN_RESCUER_ROLE` to a secure multi-sig after deployment
+   ```solidity
+   // After deployment
+   tokenRescuer.changeRescuer(secureMultiSigAddress);
+   ```
+
+2. **Incident Response Plan**: Establish clear procedures for when rescue operations are authorized
+
+3. **Event Monitoring**: Set up alerts for TokensRescued events to detect unplanned rescues
+
+4. **Address Validation**: Double-check recipient addresses before executing rescues
+
+5. **Dual Control**: Implement governance controls requiring multiple approvals before rescue
+
+# 10. Role Management
+
+## 10.1 Transferring Administrative Control
+
+### 10.1.1 Changing the Protocol Manager Administrator
+
+To transfer the `ADMIN_ROLE` to a new address (possible only for the Protocol Manager post deployment):
+
+```solidity
+function changeAdmin(address newAdmin) 
+    external 
+    onlyRole(Roles.ADMIN_ROLE) 
+    validAddress(newAdmin) 
+{
+    grantRole(Roles.ADMIN_ROLE, newAdmin);
+    revokeRole(Roles.ADMIN_ROLE, msg.sender);
+    emit NewAdmin(newAdmin);
+}
+```
+
+> 💡 **Important**: Once the `ADMIN_ROLE` is transferred, it cannot be taken back without the new admin's action. Always verify the new admin address carefully!
+
+Example usage:
+```javascript
+// Transfer ADMIN_ROLE to a new address
+// Only callable by current admin
+await protocolManager.changeAdmin(newAdminAddress);
+```
+
+### 10.1.2 Changing the Emergency Recovery Role
+
+Similarly, the `TOKEN_RESCUER_ROLE` can be transferred:
+
+```solidity
+function changeRescuer(address newRescuer) 
+    external 
+    onlyRole(Roles.TOKEN_RESCUER_ROLE) 
+    validAddress(newRescuer) 
+{
+    grantRole(Roles.TOKEN_RESCUER_ROLE, newRescuer);
+    revokeRole(Roles.TOKEN_RESCUER_ROLE, msg.sender);
+    emit NewTokensRescuer(newRescuer);
+}
+```
+Example usage:
+```javascript
+// Transfer TOKEN_RESCUER_ROLE to a secure multi-sig
+// Only callable by current token rescuer
+await v2PoolFactory.changeRescuer(multiSigWalletAddress);
+```
+
+## 10.2 Role Management Best Practices
+
+When managing protocol roles, follow these security guidelines:
+
+### 10.2.1 Protocol Administration
+
+1. **Use Multi-Signature Wallets** - Transfer the `ADMIN_ROLE` to a multi-sig for operational security
+   ```javascript
+   // Best practice: move admin to multi-sig after deployment
+   await protocolManager.changeAdmin(multiSigWalletAddress);
+   ```
+
+2. **Document Role Transfers** - Keep clear records of all role changes
+   ```javascript
+   // Monitor role changes
+   protocolManager.on("NewAdmin", (admin) => {
+     logSecurityEvent(`New admin assigned: ${admin}`);
+   });
+   ```
+
+3. **Verify Role Assignments** - Regularly check that roles are correctly assigned
+   ```javascript
+   // Verification check
+   const hasAdminRole = await protocolManager.hasRole(
+     ADMIN_ROLE,
+     expectedAdminAddress
+   );
+   console.assert(hasAdminRole, "Admin role assignment incorrect!");
+   ```
+
+### 10.2.2 Emergency Recovery
+
+1. **Cold Storage for Rescuer** - Consider using a hardware wallet for the `TOKEN_RESCUER_ROLE`
+   ```javascript
+   // Transfer to hardware wallet address
+   await v2PoolFactory.changeRescuer(hardwareWalletAddress);
+   ```
+
+2. **Role Verification** - After transfer, verify the role assignment was successful
+   ```javascript
+   // Verify TOKEN_RESCUER_ROLE transfer
+   const hasRescuerRole = await v2PoolFactory.hasRole(
+     TOKEN_RESCUER_ROLE,
+     newRescuerAddress
+   );
+   console.assert(hasRescuerRole, "Rescuer role transfer failed!");
+   ```
+
+3. **Emergency Planning** - Create a documented process for when and how token rescue can be used
+   ```javascript
+   // Document rescue process in your operations manual
+   // 1. Multi-sig confirmation of emergency
+   // 2. Security team validation
+   // 3. Execution through proper channels
+   // 4. Post-rescue audit
+   ```
+
+## 10.3 Understanding the Complete Role Hierarchy
+
+For a complete view of the protocol's role structure, refer to Section 4 (Security Architecture), which details how these roles cascade through the entire protocol:
+
+```
+Deployer
+   ├── Holds → TOKEN_RESCUER_ROLE   // Emergency Recovery
+   ├── Initially has ADMIN_ROLE
+   │   └── Transferred to → ProtocolManager
+   │
+   └── ProtocolManager
+       ├── Becomes ADMIN for → ProtocolActivator
+       │
+       └── ProtocolActivator
+           ├── Becomes ADMIN for → V2 Factory
+           ├── Becomes ADMIN for → V3 Factory
+           └── Becomes ADMIN for → Liquidity Locker
+```
+# 11. Audit Information: Deployment and Activation Status
+
+## 11.1 Overview for Auditors
+
+The Decentralized Liquidity Management Protocol (DLMP) has been **fully deployed and activated** on the Sepolia testnet, with all core components operational including:
+
+- Complete protocol deployment with proper role initialization
+- Successful V2 and V3 pool creation and liquidity provisioning
+- Active V2 liquidity locking via UNCX integration
+- Test token deployment for audit verification
+
+## 2. Deployment Addresses
+
+### 2.1 Core Protocol Components
+
+| Contract           | Address                                      | Notes                                               |
+| ------------------ | -------------------------------------------- | --------------------------------------------------- |
+| Protocol Token     | `0xddea30fec08416da84424fab9b38130b67478254` | ERC20 implementation deployed and initialized       |
+| Protocol Manager   | `0xc9bd53dbf21e477505a4978d5976ac6874a93f46` | Gateway contract, holds ADMIN_ROLE for Activator    |
+| Protocol Activator | `0x5c68a908dc0617877aafa3aba8a42e3f5265a013` | Orchestration layer, ADMIN for factories and locker |
+| V2 Pool Factory    | `0xd7d8fb219d1e145285995412c4c269e917ddb098` | Creates and manages Uniswap V2 pools                |
+| V3 Pool Factory    | `0x8dc2e327b357b0a00cc008f002c12b5158ba8532` | Creates and manages Uniswap V3 positions            |
+| Liquidity Locker   | `0x8cbe02fcc9f845c8ee31214e5a73998789eef1c2` | Handles secure V2 liquidity locking via UNCX        |
+
+### 2.2 Protocol Deployment Transaction Hashes
+```bash
+##### sepolia
+✅  [Success] Hash: 0x0598fcdf63ccd491f78b0b5777af77acef378762c7af43a1e78565a32d7bc29d
+Contract Address: 0xD7D8FB219D1E145285995412C4C269E917dDB098
+Block: 7829542
+Paid: 0.001006538993639515 ETH (1368955 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0xc924422d8e2bf01db86e75dcfded3047e19dfbc1f2cc078b4525c43e22ade607
+Contract Address: 0x8cbE02fcc9F845C8EE31214E5a73998789eef1C2
+Block: 7829542
+Paid: 0.000607628375521196 ETH (826412 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0x6df3ffc819af33b623167b7e27a4d14dba1a8fd0cb29482c8de5dfbccb819ff4
+Contract Address: 0xddeA30fec08416da84424faB9B38130b67478254
+Block: 7829542
+Paid: 0.000500678805274682 ETH (680954 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0x9f0561c103ed11a65e8d01d9c92f0ebc6aa2771da21292d7cd7ae085b4b74835
+Contract Address: 0x5c68A908DC0617877AafA3ABa8A42E3f5265A013
+Block: 7829542
+Paid: 0.000769070331883839 ETH (1045983 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0x1067f7c988853945b8279f7c0e81b83d9093fe253ae1823be19ebdce83d6ea06
+Block: 7829542
+Paid: 0.000057898114294585 ETH (78745 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0xb1986d2bd52ec76a46eb414da4c96a0c7131df4ea69242d986ef8be31972c950
+Contract Address: 0x8dc2e327B357b0a00cC008f002c12B5158bA8532
+Block: 7829542
+Paid: 0.001318080772754943 ETH (1792671 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0x97751260de78cbe4426b6fdadbaccbcc191e2d966a1414c809e9ed7699a489d6
+Block: 7829542
+Paid: 0.000057853263383772 ETH (78684 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0x98aca713aaba0acd960de900e1dc949b00bae8b1ff8e8b74c342ce6d93a3ada5
+Block: 7829542
+Paid: 0.000057811353516291 ETH (78627 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0x44951f87870589b90cc24ebf6187eb0df08f2f1705f2d67c44c7865f87400b0a
+Contract Address: 0xC9bd53DBF21E477505a4978D5976ac6874A93F46
+Block: 7829542
+Paid: 0.000798004316184055 ETH (1085335 gas * 0.735260833 gwei)
+
+##### sepolia
+✅  [Success] Hash: 0x0d0b3253d83a644ff92a8969c2fe80e5080784c0d86d513f823bc76c3ea9bf7a
+Block: 7829542
+Paid: 0.000057840028688778 ETH (78666 gas * 0.735260833 gwei)
+
+✅ Sequence #1 on sepolia | Total Paid: 0.005231404355141656 ETH (7115032 gas * avg 0.735260833 gwei)
+```
+
+### 2.3 Test Pair Token
+
+| Token                | Address                                      | Purpose                          |
+| -------------------- | -------------------------------------------- | -------------------------------- |
+| Test ERC20 PairToken | `0x78c95fe69f27f5d9a098f8c1c546ebcf530c67ac` | Mock token for audit and testing |
+
+### 2.4 Test Pair Token Deployment Transaction Hash
+```bash
+##### sepolia
+✅  [Success] Hash: 0x21b30a9ea344d21a8bb576ff0dcf7a2ba256e53aebd14ab443e3699270801f98
+Contract Address: 0x78C95Fe69F27f5d9A098f8C1c546Ebcf530c67ac
+Block: 7825438
+Paid: 0.000562877152537385 ETH (492685 gas * 1.142468621 gwei)
+
+✅ Sequence #1 on sepolia | Total Paid: 0.000562877152537385 ETH (492685 gas * avg 1.142468621 gwei)
+```
+### 2.4 LP tokens
+
+| Token                | Address / Identifier                         | 
+| -------------------- | -------------------------------------------- | 
+| V2 LP ERC20 token    | `0xD97ea525f1b15E7707Ca78A7902086E0DcA1224B` |
+| V3 LP NFT token      | `165111`                                     |
+
+## 3. Protocol Activation Details
+
+### 3.1 Activation Transaction Hashes
+
+```bash
+##### sepolia
+✅  [Success] Hash: 0x1be698e3a4c773763b1fd0beffe5acef7fc7a0f2ee3c16ce6e57b9bb0629adfe
+Block: 7829653
+Paid: 0.00011042238019188 ETH (51396 gas * 2.14846253 gwei)
+
+
+##### sepolia
+✅  [Success] Hash: 0x2934f551f9b10e82898074973487030f8a3290469a04826aec3008a30721d82d
+Block: 7829653
+Paid: 0.00011013878313792 ETH (51264 gas * 2.14846253 gwei)
+
+
+##### sepolia
+✅  [Success] Hash: 0x3bbfac23b2040b8087cb9122c5a0c989c0f458c316795ada442bd04c7f820819
+Block: 7829653
+Paid: 0.00011013878313792 ETH (51264 gas * 2.14846253 gwei)
+
+
+##### sepolia
+✅  [Success] Hash: 0xa153e991dd11d7df1bb9a48ba42e05d803804a16e8afa71309b6e45ab0ef3541
+Block: 7829653
+Paid: 0.00011042238019188 ETH (51396 gas * 2.14846253 gwei)
+
+
+##### sepolia
+✅  [Success] Hash: 0xaa52a61105e31450e2c12de150c3602129e69d7792b4237c2776b1ce12b48a40
+Block: 7829656
+Paid: 0.035578621596628682 ETH (16721086 gas * 2.127769787 gwei)
+
+✅ Sequence #1 on sepolia | Total Paid: 0.036019743923288282 ETH (16926406 gas * avg 2.144323981 gwei)
+```
+
+### 3.2 Activation Scope
+
+The protocol was activated with the following configuration:
+
+```
+✅ V2 Pools Created: Yes
+✅ V3 Pools Created: Yes
+✅ V2 Liquidity Locked: Yes (duration: 365 days)
+```
+
+## 4. Contact Information for Audit Queries
+
+For any questions during the audit process:
+
+- **Security Inquiries:** <a href="mailto:web3.security@cordona.tech">web3.security@cordona.tech</a> (Security Lead, vulnerability reports, audit coordination) 🔒
+- **Development Support:** <a href="mailto:web3.development@cordona.tech">web3.development@cordona.tech</a> (Technical Lead, implementation details, contract functionality) 💻
+- **X(Twitter)**: <a href="https://x.com/foreshadow_xyz?s=21">@foreshadow.xyz</a>
+
+Our security team is available to discuss potential vulnerabilities, clarify security architecture questions, and provide additional context for threat modeling. The development team can assist with questions about implementation details, deployment configuration, and technical specifications. 💡
+
+Feel free to reach out with any questions that arise during your audit process - we're committed to providing timely and thorough responses to support a comprehensive security assessment. 🛡️

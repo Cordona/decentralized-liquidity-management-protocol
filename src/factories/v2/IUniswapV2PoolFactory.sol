@@ -26,7 +26,7 @@ interface IUniswapV2PoolFactory is IPoolFactory {
     ///      Access Control:
     ///      - Restricted to ProtocolActivator only
     ///      - Requires ADMIN_ROLE
-    ///      
+    ///
     ///      Deployment Process:
     ///      1. Pool creation or discovery (if exists)
     ///      2. Token approvals for router
@@ -56,7 +56,7 @@ interface IUniswapV2PoolFactory is IPoolFactory {
     ///      - Restricted to ProtocolActivator only
     ///      - Requires ADMIN_ROLE
     ///      - Payable function that accepts ETH
-    ///      
+    ///
     ///      Deployment Process:
     ///      1. Pool creation or discovery (if exists)
     ///      2. Automatic ETH to WETH conversion

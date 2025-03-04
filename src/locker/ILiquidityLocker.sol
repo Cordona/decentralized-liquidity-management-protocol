@@ -27,7 +27,7 @@ interface ILiquidityLocker {
     ///      - Restricted to ProtocolActivator only
     ///      - Requires ADMIN_ROLE
     ///      - Payable function that accepts locking fee
-    ///      
+    ///
     ///      Locking Process:
     ///      1. LP token approval to external locker
     ///      2. Lock registration with external service

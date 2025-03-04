@@ -13,6 +13,7 @@ docs/
 
 # Dotenv file
 .env
+.out_of_scope
 .secrets
 broadcast/ 
 .notes.md

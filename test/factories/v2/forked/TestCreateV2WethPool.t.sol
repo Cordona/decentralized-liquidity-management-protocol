@@ -48,9 +48,9 @@ contract TestCreateV2WethPool is BaseTest {
         s_activator = deployment.periphery.protocolActivator;
         s_factory = deployment.periphery.v2Factory;
 
-        s_protocolTokenLiquidity = config.activation.protocolTokenLiquidity;
-        s_wethLiquidity = config.activation.wethLiquidity;
-        s_deadline = config.activation.deadline;
+        s_protocolTokenLiquidity = TEST_PROTOCOL_TOKEN_LIQUIDITY;
+        s_wethLiquidity = TEST_WETH_LIQUIDITY;
+        s_deadline = TEST_DEADLINE;
         s_wethAddr = config.periphery.wethAddr;
     }
 

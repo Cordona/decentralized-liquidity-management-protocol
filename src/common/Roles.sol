@@ -29,7 +29,7 @@ pragma solidity 0.8.28;
 library Roles {
     /// @dev Primary operational role for protocol management
     bytes32 internal constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    
+
     /// @dev Emergency role for recovering stuck assets
     bytes32 internal constant TOKEN_RESCUER_ROLE = keccak256("TOKEN_RESCUER_ROLE");
 }

@@ -58,10 +58,10 @@ contract TestLiquidityLockerLocking is BaseTest {
         s_protocolActivator = address(deployment.periphery.protocolActivator);
         s_factory = deployment.periphery.v2Factory;
 
-        s_protocolTokenLiquidity = config.activation.protocolTokenLiquidity;
-        s_pairTokenLiquidity = config.activation.pairTokenLiquidity;
-        s_deadline = config.activation.deadline;
-        s_liquidityTokensRecipient = config.activation.liquidityTokensRecipient;
+        s_protocolTokenLiquidity = TEST_PROTOCOL_TOKEN_LIQUIDITY;
+        s_pairTokenLiquidity = TEST_PAIR_TOKEN_LIQUIDITY;
+        s_deadline = TEST_DEADLINE;
+        s_liquidityTokensRecipient = someAddress();
         s_uncxLockerAddr = config.periphery.locker.liquidityLockerAddr;
     }
 

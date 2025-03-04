@@ -7,7 +7,6 @@ import {
     ProtocolConfig,
     CoreConfig,
     PeripheryConfig,
-    ActivationConfig,
     InfraConfig,
     UniswapV2Config,
     UniswapV3Config,
@@ -15,13 +14,8 @@ import {
 } from "./DeploymentTypes.s.sol";
 
 contract DeploymentConfig is Script {
-    function loadConfigFromEnvironment() external view returns (ProtocolConfig memory) {
-        return ProtocolConfig({
-            core: _loadCoreConfig(),
-            periphery: _loadPeripheryConfig(),
-            activation: _loadActivationConfig(),
-            infra: _loadInfraConfig()
-        });
+    function loadConfigFromEnvironment() public view returns (ProtocolConfig memory) {
+        return ProtocolConfig({core: _loadCoreConfig(), periphery: _loadPeripheryConfig(), infra: _loadInfraConfig()});
     }
 
     function _loadCoreConfig() private view returns (CoreConfig memory) {
@@ -46,17 +40,6 @@ contract DeploymentConfig is Script {
                 liquidityLockerAddr: vm.envAddress(UNISWAP_V2_LIQUIDITY_LOCKER_ADDR_ENV_VAR),
                 lockDurationDays: vm.envUint(LOCK_DURATION_DAYS_ENV_VAR)
             })
-        });
-    }
-
-    function _loadActivationConfig() private view returns (ActivationConfig memory) {
-        return ActivationConfig({
-            protocolTokenLiquidity: vm.envUint(PROTOCOL_TOKEN_LIQUIDITY_ENV_VAR),
-            pairTokenLiquidity: vm.envUint(PAIR_TOKEN_LIQUIDITY_ENV_VAR),
-            wethLiquidity: vm.envUint(WETH_LIQUIDITY_ENV_VAR),
-            liquidityTokensRecipient: vm.envAddress(LIQUIDITY_TOKENS_RECIPIENT_ENV_VAR),
-            fee: uint24(vm.envUint(FEE_ENV_VAR)),
-            deadline: vm.envUint(DEADLINE_ENV_VAR)
         });
     }
 

@@ -11,7 +11,6 @@ import {ProtocolActivator} from "src/activator/ProtocolActivator.sol";
 struct ProtocolConfig {
     CoreConfig core;
     PeripheryConfig periphery;
-    ActivationConfig activation;
     InfraConfig infra;
 }
 
@@ -32,15 +31,6 @@ struct PeripheryConfig {
 
 struct InfraConfig {
     string rpcUrl;
-}
-
-struct ActivationConfig {
-    uint256 protocolTokenLiquidity;
-    uint256 pairTokenLiquidity;
-    uint256 wethLiquidity;
-    address liquidityTokensRecipient;
-    uint24 fee;
-    uint256 deadline;
 }
 
 struct UniswapV2Config {

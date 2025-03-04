@@ -59,11 +59,11 @@ contract TestCreateV3Pool is BaseTest {
         s_factory = deployment.periphery.v3Factory;
 
         s_wethAddr = config.periphery.wethAddr;
-        s_liquidityTokensRecipient = config.activation.liquidityTokensRecipient;
-        s_protocolTokenLiquidity = config.activation.protocolTokenLiquidity;
-        s_pairTokenLiquidity = config.activation.pairTokenLiquidity;
-        s_deadline = config.activation.deadline;
-        s_fee = config.activation.fee;
+        s_liquidityTokensRecipient = someAddress();
+        s_protocolTokenLiquidity = TEST_PROTOCOL_TOKEN_LIQUIDITY;
+        s_pairTokenLiquidity = TEST_PAIR_TOKEN_LIQUIDITY;
+        s_deadline = TEST_DEADLINE;
+        s_fee = TEST_FEE;
     }
 
     function testShouldSuccessfullyCreateV3Pool() public {

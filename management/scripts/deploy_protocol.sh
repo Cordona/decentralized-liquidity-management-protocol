@@ -67,15 +67,45 @@ validate_env() {
 }
 
 # 🧪 Run Pre-Deployment Tests and Coverage Report
+# 🧪 Run Pre-Deployment Tests and Coverage Report
 run_tests_and_coverage() {
-  local MIN_COVERAGE=85
+  local RECOMMENDED_COVERAGE=85
+  local custom_coverage
   
   echo -e "\n${COLOR_GREEN}🚀 Protocol Deployment Pipeline${COLOR_RESET}"
   echo -e "\n${COLOR_YELLOW}Running Tests & Coverage Analysis...${COLOR_RESET}"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+
+  # Prompt for custom coverage threshold
+  echo -e "${COLOR_BLUE}Test Coverage Configuration${COLOR_RESET}"
+  echo -e "Industry standard minimum coverage is ${COLOR_GREEN}85%${COLOR_RESET} for production protocols"
+  read -rp "Enter your desired coverage threshold (recommended: 85%): " custom_coverage
+  
+  # Validate input and provide warnings for low coverage
+  if ! [[ "$custom_coverage" =~ ^[0-9]+$ ]] || [ "$custom_coverage" -gt 100 ]; then
+    log "ERROR" "Invalid coverage threshold. Using recommended value of ${RECOMMENDED_COVERAGE}%"
+    custom_coverage=$RECOMMENDED_COVERAGE
+  elif [ "$custom_coverage" -lt "$RECOMMENDED_COVERAGE" ]; then
+    echo -e "\n${COLOR_RED}⚠️  WARNING: LOW COVERAGE THRESHOLD DETECTED ⚠️${COLOR_RESET}"
+    echo -e "${COLOR_RED}You've selected a coverage threshold of ${custom_coverage}%, which is below the recommended ${RECOMMENDED_COVERAGE}%${COLOR_RESET}"
+    echo -e "${COLOR_RED}Low test coverage increases risk of undetected bugs and security vulnerabilities${COLOR_RESET}"
+    echo ""
+    echo -e "${COLOR_YELLOW}Consequences may include:${COLOR_RESET}"
+    echo -e " - Undetected edge case vulnerabilities"
+    echo -e " - Higher risk of funds loss in production"
+    echo -e " - Potential reputational damage to protocol"
+    echo ""
+    
+    # Require explicit acknowledgment
+    prompt_for_confirmation "ACKNOWLEDGE LOW TEST COVERAGE RISK" "Type 'ACKNOWLEDGE LOW TEST COVERAGE RISK' to proceed with ${custom_coverage}% coverage threshold"
+  fi
+  
+  local MIN_COVERAGE=$custom_coverage
+  log "INFO" "Using coverage threshold: ${MIN_COVERAGE}%"
 
   eval "$(shell/load_env.sh "$ENV_DIR/test.env")"
 
+  # Rest of your existing function...
   echo -e "\n${COLOR_BLUE}Executing Coverage Analysis...${COLOR_RESET}"
   local coverage_output
   if ! coverage_output=$(forge coverage --ir-minimum --report summary 2>&1); then
@@ -85,7 +115,7 @@ run_tests_and_coverage() {
     done
     log "ERROR" "Test execution failed!"
     exit 1
-fi
+  fi
 
   # Extract the Total line and parse metrics 🔧
   local total_line
@@ -99,12 +129,12 @@ fi
 
   # Display coverage report 📊
   echo -e "\n${COLOR_PURPLE}📊 Coverage Report:${COLOR_RESET}"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
   echo "Lines........: ${lines_coverage}% (min: ${MIN_COVERAGE}%)"
   echo "Statements...: ${statements_coverage}% (min: ${MIN_COVERAGE}%)"
   echo "Branches.....: ${branches_coverage}% (min: ${MIN_COVERAGE}%)"
   echo "Functions....: ${functions_coverage}% (min: ${MIN_COVERAGE}%)"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
 
   # Check coverage thresholds 🎯
   if (( $(echo "$lines_coverage < $MIN_COVERAGE" | bc -l) )) || \
@@ -120,7 +150,7 @@ fi
 
 run_security_checks() {
   echo -e "\n${COLOR_YELLOW}Running Security Analysis Tools...${COLOR_RESET}"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
 
   STATIC_ANALYSIS_SCRIPT="$(dirname "$0")/static_analysis.sh"
 
@@ -134,6 +164,7 @@ run_security_checks() {
 
   if [[ "$SLITHER_FOUND_ISSUES" -eq 1 || "$ADERYN_FOUND_ISSUES" -eq 1 ]]; then
     while true; do
+      echo ""
       read -rp "$(echo -e "${COLOR_YELLOW}Would you like to [1] Cancel deployment or [2] Continue with known issues? (1/2):${COLOR_RESET} ")" user_choice
       case "$user_choice" in
         1) 
@@ -162,7 +193,7 @@ run_security_checks() {
 # 📜 Protocol Architecture Review
 review_protocol_architecture() {
   echo -e "\n${COLOR_YELLOW}Protocol Architecture Review${COLOR_RESET}"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
 
   for dir in "$SRC_DIR"/*/; do
     module_name=$(basename "$dir")

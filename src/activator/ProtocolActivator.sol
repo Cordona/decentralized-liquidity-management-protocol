@@ -57,9 +57,6 @@ contract ProtocolActivator is IProtocolActivator, ModuleInitializer {
     error ProtocolActivator__DeadlineExceedsThreshold(uint256 deadline, uint256 threshold);
 
     // [CONSTANTS] |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-    /// @dev UNCX locker flat fee per lock operation
-    uint256 private constant LOCKER_ETH_FLAT_FEE = 0.1 ether;
-
     /// @dev Security limit for pool deadline to prevent extended time locks
     uint256 private constant MAX_ALLOWED_DEADLINE = 30 minutes;
 
@@ -78,14 +75,14 @@ contract ProtocolActivator is IProtocolActivator, ModuleInitializer {
         onlyRole(Roles.ADMIN_ROLE)
         initialized
         validAddress(context.config.liquidityTokensRecipient)
-        validAddress(context.config.token)
-        validAddress(context.config.pair)
+        validAddress(context.config.protocolToken)
+        validAddress(context.config.pairToken)
         validAddress(context.v2Factory)
         validAddress(context.v3Factory)
         validAddress(context.liquidityLocker)
         positiveValue(context.config.wethLiquidity)
-        positiveValue(context.config.tokenLiquidity)
-        positiveValue(context.config.pairLiquidity)
+        positiveValue(context.config.protocolTokenLiquidity)
+        positiveValue(context.config.pairTokenLiquidity)
     {
         if (s_activated) {
             revert ProtocolActivator__AlreadyActivated();
@@ -116,10 +113,10 @@ contract ProtocolActivator is IProtocolActivator, ModuleInitializer {
         }
 
         if (
-            config.fee != V3Constants.FEE_LOW && config.fee != V3Constants.FEE_MEDIUM
-                && config.fee != V3Constants.FEE_HIGH
+            config.v3PoolFee != V3Constants.FEE_LOW && config.v3PoolFee != V3Constants.FEE_MEDIUM
+                && config.v3PoolFee != V3Constants.FEE_HIGH
         ) {
-            revert ProtocolActivator__InvalidFeeTier(config.fee);
+            revert ProtocolActivator__InvalidFeeTier(config.v3PoolFee);
         }
     }
 
@@ -172,8 +169,8 @@ contract ProtocolActivator is IProtocolActivator, ModuleInitializer {
     {
         uint256 descaledEthTransfer = ethTransfer.descaleEth();
         uint256 lockCount = (context.scope.createV2Pools && context.scope.lockV2Liquidity) ? 2 : 0;
-        uint256 descaledLockerFees = (LOCKER_ETH_FLAT_FEE * lockCount).descaleEth();
-        uint256 lockingFeesTotal = LOCKER_ETH_FLAT_FEE * lockCount;
+        uint256 descaledLockerFees = (context.config.liquidityLockerEthFee * lockCount).descaleEth();
+        uint256 lockingFeesTotal = context.config.liquidityLockerEthFee * lockCount;
         uint256 poolTypeCount = 0;
 
         if (context.scope.createV2Pools) poolTypeCount++;
@@ -226,16 +223,19 @@ contract ProtocolActivator is IProtocolActivator, ModuleInitializer {
             context.scope.lockV2Liquidity ? address(this) : context.config.liquidityTokensRecipient;
 
         (address liquidityTokenA, uint256 liquidityA) = v2Factory.createV2Pool(
-            context.config.token,
-            context.config.pair,
+            context.config.protocolToken,
+            context.config.pairToken,
             transactionalV2LiquidityOwner,
-            context.config.tokenLiquidity,
-            context.config.pairLiquidity,
+            context.config.protocolTokenLiquidity,
+            context.config.pairTokenLiquidity,
             context.config.deadline
         );
 
         (address liquidityTokenB, uint256 liquidityB) = v2Factory.createV2WethPool{value: perPoolWethLiquidity}(
-            context.config.token, transactionalV2LiquidityOwner, context.config.tokenLiquidity, context.config.deadline
+            context.config.protocolToken,
+            transactionalV2LiquidityOwner,
+            context.config.protocolTokenLiquidity,
+            context.config.deadline
         );
 
         if (context.scope.lockV2Liquidity) {
@@ -275,28 +275,30 @@ contract ProtocolActivator is IProtocolActivator, ModuleInitializer {
     ) private {
         ILiquidityLocker liquidityLocker = ILiquidityLocker(context.liquidityLocker);
         IERC20(liquidityToken).safeTransfer(context.liquidityLocker, liquidity);
-        liquidityLocker.lockV2Liquidity{value: LOCKER_ETH_FLAT_FEE}(liquidityToken, liquidity, liquidityTokenRecipient);
+        liquidityLocker.lockV2Liquidity{value: context.config.liquidityLockerEthFee}(
+            liquidityToken, liquidity, liquidityTokenRecipient
+        );
     }
 
     function _createV3Pools(ActivationContext calldata context, uint256 perPoolWethLiquidity) private {
         IUniswapV3PoolFactory v3Factory = IUniswapV3PoolFactory(context.v3Factory);
 
         v3Factory.createV3Pool(
-            context.config.token,
-            context.config.pair,
+            context.config.protocolToken,
+            context.config.pairToken,
             context.config.liquidityTokensRecipient,
-            context.config.tokenLiquidity,
-            context.config.pairLiquidity,
+            context.config.protocolTokenLiquidity,
+            context.config.pairTokenLiquidity,
             context.config.deadline,
-            context.config.fee
+            context.config.v3PoolFee
         );
 
         v3Factory.createV3WethPool{value: perPoolWethLiquidity}(
-            context.config.token,
+            context.config.protocolToken,
             context.config.liquidityTokensRecipient,
-            context.config.tokenLiquidity,
+            context.config.protocolTokenLiquidity,
             context.config.deadline,
-            context.config.fee
+            context.config.v3PoolFee
         );
     }
 }

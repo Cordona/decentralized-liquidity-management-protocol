@@ -12,7 +12,7 @@ RED    := \033[31m
 BLUE   := \033[34m
 NC     := \033[0m  # No Color / Reset
 
-.PHONY: help dependencies test coverage analyze format secrets deploy
+.PHONY: help dependencies test coverage analyze format secrets deploy-protocol deploy-script activate
 
 help:
 	@echo ""
@@ -27,12 +27,6 @@ help:
 	@echo "    ├─ Check for newer versions without upgrading"
 	@echo "    ├─ Selectively remove specific dependencies"
 	@echo "    └─ Export dependency information to documentation"
-	@echo ""
-	@echo "$(YELLOW)🚀  Deployment:$(NC)"
-	@echo "  make deploy       - Interactive deployment workflow"
-	@echo "    ├─ Supports both Sepolia and Mainnet"
-	@echo "    ├─ Includes contract verification"
-	@echo "    └─ Loads network-specific configurations"
 	@echo ""
 	@echo "$(YELLOW)🧪  Testing & Coverage:$(NC)"
 	@echo "  make test         - Run tests with configurable logging"
@@ -55,9 +49,37 @@ help:
 	@echo "    ├─ Retrieve stored secrets when required"
 	@echo "    └─ Keep keystore access secure"
 	@echo ""
+	@echo "$(YELLOW)🚀  Script Deployment:$(NC)"
+	@echo "  make deploy-script - Guided deployment script execution"
+	@echo "    ├─ Prompts for deployment script path"
+	@echo "    ├─ Collects contract name and deployer address"
+	@echo "    ├─ Validates keystore and RPC configuration"
+	@echo "    ├─ Supports Etherscan verification"
+	@echo "    ├─ Ensures correct contract deployment settings"
+	@echo "    ├─ Provides a final confirmation step"
+	@echo "    └─ Executes deployment via Foundry (forge script)"
+	@echo ""
+	@echo "$(YELLOW)🚀  Protocol Deployment:$(NC)"
+	@echo "  make deploy-protocol - Interactive deployment workflow"
+	@echo "    ├─ Supports both Sepolia and Mainnet"
+	@echo "    ├─ Includes contract verification"
+	@echo "    └─ Loads network-specific configurations"
+	@echo ""
+	@echo "$(YELLOW)⚡  Protocol Activation:$(NC)"
+	@echo "  make activate-protocol     - Execute the activation workflow for deployed contracts"
+	@echo "    ├─ Discovers deployed contract addresses"
+	@echo "    ├─ Collects required activation parameters"
+	@echo "    ├─ Ensures necessary approvals and balance checks"
+	@echo "    ├─ Supports interactive and automated execution modes"
+	@echo "    ├─ Validates protocol readiness before activation"
+	@echo "    ├─ Runs network-specific activation on Sepolia or Mainnet"
+	@echo "    ├─ Provides execution logs and confirmation prompts"
+	@echo "    └─ Ensures activation cannot be re-executed post-success"
+	@echo ""
 	@echo "$(GREEN)💡  Development Tips:$(NC)"
 	@echo "  1. Always run 'make dependencies' after cloning the repo"
 	@echo "  2. Ensure environment files are configured:"
+	@echo "     ├─ .env/test.env for local fork testing at mainnet"
 	@echo "     ├─ .env/sepolia.env for testnet"
 	@echo "     └─ .env/mainnet.env for mainnet"
 	@echo "  3. Run tests before making significant changes"
@@ -95,5 +117,11 @@ aderyn:
 secrets:
 	./management/scripts/secrets_management.sh
 
-deploy:
-	./management/scripts/deploy.sh
+deploy-protocol:
+	./management/scripts/deploy_protocol.sh
+
+deploy-script:
+	./management/scripts/simple_deployment.sh
+
+activate-protocol:
+	./management/scripts/activate_protocol.sh

@@ -27,7 +27,7 @@ contract TestActivateProtocolManager is BaseTest {
     using Utils for uint256;
 
     // [CONSTANTS] ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-    uint256 public constant LOCKER_ETH_FLAT_FEE = 0.1 ether;
+    uint256 public constant LOCKER_ETH_MAIN_NET_FLAT_FEE = 0.1 ether;
 
     // [STATE] |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     ProtocolToken private s_protocolToken;
@@ -57,12 +57,12 @@ contract TestActivateProtocolManager is BaseTest {
         s_v3Factory = deployment.periphery.v3Factory;
         s_protocolActivator = deployment.periphery.protocolActivator;
 
-        s_liquidityTokensRecipient = config.activation.liquidityTokensRecipient;
-        s_protocolTokenLiquidity = config.activation.protocolTokenLiquidity;
-        s_pairTokenLiquidity = config.activation.pairTokenLiquidity;
-        s_wethLiquidity = config.activation.wethLiquidity;
-        s_deadline = config.activation.deadline;
-        s_fee = config.activation.fee;
+        s_liquidityTokensRecipient = someAddress();
+        s_protocolTokenLiquidity = TEST_PROTOCOL_TOKEN_LIQUIDITY;
+        s_pairTokenLiquidity = TEST_PAIR_TOKEN_LIQUIDITY;
+        s_wethLiquidity = TEST_WETH_LIQUIDITY;
+        s_deadline = TEST_DEADLINE;
+        s_fee = TEST_FEE;
         s_wethAddr = config.periphery.wethAddr;
 
         vm.prank(deployer());
@@ -78,20 +78,21 @@ contract TestActivateProtocolManager is BaseTest {
         s_pairToken.transfer(address(s_v3Factory), scaledPairTokenLiquidity);
         vm.stopPrank();
 
-        s_sufficientEth = (s_wethLiquidity.safeScale(s_wethAddr) * 2) + (LOCKER_ETH_FLAT_FEE * 2);
+        s_sufficientEth = (s_wethLiquidity.safeScale(s_wethAddr) * 2) + (LOCKER_ETH_MAIN_NET_FLAT_FEE * 2);
     }
 
     function testShouldSuccessfullyActivateProtocolManagerWithFullScope() public {
         // Given
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -134,13 +135,14 @@ contract TestActivateProtocolManager is BaseTest {
         // Given
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -185,20 +187,21 @@ contract TestActivateProtocolManager is BaseTest {
         // Given
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
         ActivationScope memory scope =
             ActivationScope({createV2Pools: true, createV3Pools: false, lockV2Liquidity: true});
 
-        uint256 ethTransfer = (s_wethLiquidity.safeScale(s_wethAddr) * 1) + (LOCKER_ETH_FLAT_FEE * 2);
+        uint256 ethTransfer = (s_wethLiquidity.safeScale(s_wethAddr) * 1) + (LOCKER_ETH_MAIN_NET_FLAT_FEE * 2);
 
         vm.deal(deployer(), ethTransfer);
 
@@ -236,13 +239,14 @@ contract TestActivateProtocolManager is BaseTest {
         // Given
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -289,13 +293,14 @@ contract TestActivateProtocolManager is BaseTest {
 
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -318,13 +323,14 @@ contract TestActivateProtocolManager is BaseTest {
         // Given
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -351,37 +357,40 @@ contract TestActivateProtocolManager is BaseTest {
         // Given
         PoolConfig memory withInvalidRecipient = PoolConfig({
             liquidityTokensRecipient: ZERO_ADDR,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
         PoolConfig memory withInvalidToken = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: ZERO_ADDR,
-            pair: address(s_pairToken),
+            protocolToken: ZERO_ADDR,
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
         PoolConfig memory withInvalidPair = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: ZERO_ADDR,
+            protocolToken: address(s_protocolToken),
+            pairToken: ZERO_ADDR,
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -415,13 +424,14 @@ contract TestActivateProtocolManager is BaseTest {
 
         PoolConfig memory withInvalidDeadline = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: invalidDeadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -448,13 +458,14 @@ contract TestActivateProtocolManager is BaseTest {
 
         PoolConfig memory withInvalidFee = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: invalidFeeTier,
+            v3PoolFee: invalidFeeTier,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -477,37 +488,40 @@ contract TestActivateProtocolManager is BaseTest {
         // Given
         PoolConfig memory withInvalidTokenLiquidity = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: 0,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: 0,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
         PoolConfig memory withInvalidPairLiquidity = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: 0,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: 0,
             wethLiquidity: s_wethLiquidity
         });
 
         PoolConfig memory withInvalidWethLiquidity = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: 0
         });
 
@@ -540,13 +554,14 @@ contract TestActivateProtocolManager is BaseTest {
 
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 
@@ -573,13 +588,14 @@ contract TestActivateProtocolManager is BaseTest {
         // Given
         PoolConfig memory config = PoolConfig({
             liquidityTokensRecipient: s_liquidityTokensRecipient,
-            token: address(s_protocolToken),
-            pair: address(s_pairToken),
+            protocolToken: address(s_protocolToken),
+            pairToken: address(s_pairToken),
             weth: s_wethAddr,
-            fee: s_fee,
+            v3PoolFee: s_fee,
+            liquidityLockerEthFee: LOCKER_ETH_MAIN_NET_FLAT_FEE,
             deadline: s_deadline,
-            tokenLiquidity: s_protocolTokenLiquidity,
-            pairLiquidity: s_pairTokenLiquidity,
+            protocolTokenLiquidity: s_protocolTokenLiquidity,
+            pairTokenLiquidity: s_pairTokenLiquidity,
             wethLiquidity: s_wethLiquidity
         });
 

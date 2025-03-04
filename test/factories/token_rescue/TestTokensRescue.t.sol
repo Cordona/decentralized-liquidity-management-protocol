@@ -49,14 +49,14 @@ contract TestCreateV2Pool is BaseTest {
         s_pairToken = new MockPairToken();
         vm.stopBroadcast();
 
-        (ProtocolDeployment memory deployment, ProtocolConfig memory config) = new Deploy().run();
+        (ProtocolDeployment memory deployment,) = new Deploy().run();
 
         s_protocolToken = deployment.core.token;
         s_factory = deployment.periphery.v2Factory;
 
-        s_protocolTokenLiquidity = config.activation.protocolTokenLiquidity;
-        s_pairTokenLiquidity = config.activation.pairTokenLiquidity;
-        s_deadline = config.activation.deadline;
+        s_protocolTokenLiquidity = TEST_PROTOCOL_TOKEN_LIQUIDITY;
+        s_pairTokenLiquidity = TEST_PAIR_TOKEN_LIQUIDITY;
+        s_deadline = TEST_DEADLINE;
     }
 
     function testShouldSuccessfullyRescueTokens() public {
@@ -124,7 +124,7 @@ contract TestCreateV2Pool is BaseTest {
         vm.stopPrank();
 
         vm.startPrank(someAddress());
-        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE, someAddress()),true);
+        assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE, someAddress()), true);
         assertEq(s_factory.hasRole(Roles.TOKEN_RESCUER_ROLE, someAddress()), true);
         vm.stopPrank();
 

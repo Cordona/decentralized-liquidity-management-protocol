@@ -2,18 +2,29 @@
 pragma solidity 0.8.28;
 
 /**
+ * @notice Wrapper struct for deployment addresses
+ * @dev Used in the ActivateProtocol script
+ */
+struct ProtocolDeployments {
+    address manager;
+    address v2factory;
+    address v3factory;
+}
+
+/**
  * @notice Core configuration for pool creation and protocol activation
  * @dev Passed to ProtocolManager.activate() to initiate pool deployment
  */
 struct PoolConfig {
     address liquidityTokensRecipient;
-    address token;
-    address pair;
+    address protocolToken;
+    address pairToken;
     address weth;
-    uint24 fee;
+    uint24 v3PoolFee;
+    uint256 liquidityLockerEthFee;
     uint256 deadline;
-    uint256 tokenLiquidity;
-    uint256 pairLiquidity;
+    uint256 protocolTokenLiquidity;
+    uint256 pairTokenLiquidity;
     uint256 wethLiquidity;
 }
 
